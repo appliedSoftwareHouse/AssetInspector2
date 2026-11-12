@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Applications/">
+    <Project Path="WebApp/WebApp.csproj" />
+  </Folder>
+  <Folder Name="/Database/">
+    <Project Path="DB.Core/DB.Core.csproj" />
+  </Folder>
+  <Folder Name="/Language/">
+    <Project Path="LanguagePack/LanguagePack.csproj" />
+  </Folder>
+</Solution>
