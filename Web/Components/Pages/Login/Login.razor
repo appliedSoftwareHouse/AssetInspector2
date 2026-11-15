@@ -1,0 +1,253 @@
+﻿@page "/login"
+@layout LoginLayout
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="10" fill="#2563EB" />
+                    <path d="M12 20L18 26L28 14" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <h1 class="login-title">Sign in</h1>
+            <p class="login-subtitle">Enter your credentials to access your account</p>
+        </div>
+
+        <div class="login-form">
+            <div class="form-group">
+                <label class="form-label" for="userId">User ID</label>
+                <input id="userId"
+                       type="text"
+                       class="form-input"
+                       placeholder="Enter your user ID"
+                       @bind="UserLogin.UserID"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input id="password"
+                       type="password"
+                       class="form-input"
+                       placeholder="Enter your password"
+                       @bind="UserLogin.Password"
+                       @bind:event="oninput" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(Error))
+            {
+                <div class="form-error" role="alert">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5" />
+                        <path d="M8 4.5V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                        <circle cx="8" cy="11" r="0.75" fill="currentColor" />
+                    </svg>
+                    <span>@Error</span>
+                </div>
+            }
+
+            <button class="btn-primary" @onclick="OnLogin">
+                Sign in
+            </button>
+        </div>
+
+        <div class="login-footer">
+            <span>Forgot your password? </span>
+            <a href="#" class="link">Reset it here</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background-color: #f3f4f6;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        padding: 1rem;
+        box-sizing: border-box;
+    }
+
+    .login-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06);
+        max-width: 420px;
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        box-sizing: border-box;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .login-logo {
+        display: inline-flex;
+        margin-bottom: 1.25rem;
+    }
+
+    .login-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.4rem 0;
+        letter-spacing: -0.02em;
+    }
+
+    .login-subtitle {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.375rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.9375rem;
+        color: #111827;
+        background: #ffffff;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        outline: none;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .form-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+    .form-error {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        padding: 0.625rem 0.875rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 0.6875rem 1rem;
+        border: none;
+        border-radius: 8px;
+        background-color: #2563eb;
+        color: #ffffff;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.15s ease, box-shadow 0.15s ease;
+        font-family: inherit;
+        margin-top: 0.25rem;
+    }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-primary:active {
+            background-color: #1e40af;
+            box-shadow: none;
+        }
+
+        .btn-primary:focus-visible {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+
+    .login-footer {
+        margin-top: 1.75rem;
+        text-align: center;
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .link {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+        .link:hover {
+            text-decoration: underline;
+        }
+
+    @@media (max-width: 480px) {
+        .login-card {
+            padding: 1.75rem 1.25rem;
+            border-radius: 10px;
+        }
+    }
+</style>
+
+@code {
+    private string Error = "";
+
+    public AppModels.Login UserLogin { get; set; } = new AppModels.Login();
+
+    protected override void OnInitialized()
+    {
+        // Initialization logic if needed
+    }
+
+    public void OnLogin()
+    {
+        Error = "";
+
+        if (string.IsNullOrWhiteSpace(UserLogin?.UserID))
+        {
+            Error = "Please enter your user ID.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(UserLogin?.Password))
+        {
+            Error = "Please enter your password.";
+            return;
+        }
+
+        // Handle login logic here
+        // Example: call your authentication service
+        // If login succeeds, navigate to home page
+        // If it fails, set Error message
+
+        // Placeholder success (replace with actual auth logic)
+        // NavigationManager.NavigateTo("/");
+    }
+}

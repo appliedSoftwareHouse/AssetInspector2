@@ -1,0 +1,68 @@
+﻿@page "/"
+@layout HomeLayout
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+
+<PageTitle>Home</PageTitle>
+
+
+<div class="video-container">
+    <video @ref="videoElement" id="homeVideo" class="home-video"
+           autoplay muted loop playsinline preload="auto">
+        <source src="videos/AssetInspector.mp4" type="video/mp4" />
+    </video>
+
+    <button type="button" class="btn btn-dark sound-toggle" @onclick="ToggleSound">
+        @(_isMuted ? "🔇 Sound off" : "🔊 Sound on")
+    </button>
+</div>
+
+@code {
+    private bool _isMuted = true;
+    private ElementReference videoElement;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await JS.InvokeVoidAsync("videoHelper.play", videoElement);
+    }
+
+    private async Task ToggleSound()
+    {
+        _isMuted = !_isMuted;
+        await JS.InvokeVoidAsync("videoHelper.setMuted", videoElement, _isMuted);
+    }
+}
+
+<style>
+    
+
+    .video-container {
+        position: relative;
+        width: 100%;
+        height: 100%; /* Fills the layout row completely */
+        overflow: hidden;
+    }
+
+    .home-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Scales the video to fill the frame without stretching */
+        display: block;
+    }
+
+    .sound-toggle {
+        position: absolute;
+        right: 1.5rem;
+        bottom: 1.5rem;
+        opacity: 0.85;
+        z-index: 10; /* Keeps the button on top of the video */
+    }
+
+        .sound-toggle:hover {
+            opacity: 1;
+        }
+</style>

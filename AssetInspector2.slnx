@@ -1,6 +1,11 @@
 <Solution>
   <Folder Name="/Applications/">
-    <Project Path="WebApp/WebApp.csproj" />
+    <Project Path="Web/Web.csproj" />
+  </Folder>
+  <Folder Name="/Common/">
+    <Project Path="AppAuth/AppAuth.csproj" />
+    <Project Path="AppModels/AppModels.csproj" />
+    <Project Path="Crypto/Crypto.csproj" />
   </Folder>
   <Folder Name="/Database/">
     <Project Path="DB.Core/DB.Core.csproj" />

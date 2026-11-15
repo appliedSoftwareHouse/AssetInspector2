@@ -1,0 +1,149 @@
+﻿@using System.Globalization
+@inherits LayoutComponentBase
+@inject NavigationManager Nav
+
+<div class="app-shell">
+    <header class="app-header">
+
+        <img src="Images/System/MyLogo.gif" alt="Company Logo" class="header-logo" />
+
+        <div class="app-title">Asset Inspector 2</div>
+
+        <select class="lang-select" value="@CurrentLang" @onchange="ChangeLanguage">
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+        </select>
+
+        <img src="Images/System/Client.gif" alt="Client" class="header-client" />
+    </header>
+
+    <div class="app-body">
+        <main class="app-content">
+            @Body
+        </main>
+    </div>
+
+</div>
+
+<style>
+    .app-shell {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .app-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 70px;
+        padding: 0 20px;
+        background-color: #ffffff;
+        border-bottom: 1px solid #d6d5d5;
+        flex-shrink: 0;
+    }
+
+    .header-logo {
+        height: 50px;
+        width: auto;
+    }
+
+    .header-client {
+        height: 50px;
+        width: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .app-title {
+        flex: 1;
+        text-align: center;
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .app-body {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+    }
+
+
+    .app-sidebar {
+        width: 250px;
+        flex-shrink: 0;
+        background-color: #1f2a44;
+        overflow-x: hidden;
+        overflow-y: auto;
+        white-space: nowrap;
+        transition: width 0.25s ease;
+    }
+
+        .app-sidebar.collapsed {
+            width: 0;
+        }
+
+    .app-content {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    #blazor-error-ui {
+        background: lightyellow;
+        bottom: 0;
+        box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+        display: none;
+        left: 0;
+        padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+        position: fixed;
+        width: 100%;
+        z-index: 1000;
+    }
+
+        #blazor-error-ui .dismiss {
+            cursor: pointer;
+            position: absolute;
+            right: 0.75rem;
+            top: 0.5rem;
+        }
+
+
+
+
+    .menu-toggle {
+        background: none;
+        border: none;
+        font-size: 1.6rem;
+        cursor: pointer;
+        margin-right: 15px;
+        line-height: 1;
+    }
+
+    .lang-select {
+        margin: 0 15px;
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #fff;
+    }
+</style>
+
+
+@code {
+    private bool sidebarOpen = true;
+
+    private void ToggleSidebar() => sidebarOpen = !sidebarOpen;
+
+    private string CurrentLang => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
+    private void ChangeLanguage(ChangeEventArgs e)
+    {
+        var culture = e.Value?.ToString() ?? "en";
+        var returnUrl = "/" + Nav.ToBaseRelativePath(Nav.Uri);
+
+        Nav.NavigateTo(
+            $"/culture/set?culture={culture}&redirectUri={Uri.EscapeDataString(returnUrl)}",
+            forceLoad: true);
+    }
+}

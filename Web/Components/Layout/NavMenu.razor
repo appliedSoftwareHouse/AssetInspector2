@@ -1,0 +1,10 @@
+﻿@using LanguagePack
+@inject Translator L
+
+<nav class="nav-menu">
+    <div class="nav-item"><NavLink href="/" Match="NavLinkMatch.All">@L["Home"]</NavLink></div>
+    <div class="nav-item"><NavLink href="/login">@L["Login"]</NavLink></div>
+    <div class="nav-item"><NavLink href="/vouchers">@L["Vouchers"]</NavLink></div>
+    <div class="nav-item"><NavLink href="/reports">@L["Reports"]</NavLink></div>
+</nav>
+

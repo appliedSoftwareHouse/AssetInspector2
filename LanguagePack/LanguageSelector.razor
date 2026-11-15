@@ -1,0 +1,24 @@
+﻿@using System.Globalization
+@inject NavigationManager Nav
+@inject LanguageStore Store
+
+<select class="lang-select" value="@CurrentLang" @onchange="ChangeLanguage">
+    @foreach (var lang in Store.Languages)
+    {
+        <option value="@lang.Code">@lang.Name</option>
+    }
+</select>
+
+@code {
+    private string CurrentLang => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
+    private void ChangeLanguage(ChangeEventArgs e)
+    {
+        var culture = e.Value?.ToString() ?? "en";
+        var returnUrl = "/" + Nav.ToBaseRelativePath(Nav.Uri);
+
+        Nav.NavigateTo(
+            $"/culture/set?culture={culture}&redirectUri={Uri.EscapeDataString(returnUrl)}",
+            forceLoad: true);
+    }
+}
