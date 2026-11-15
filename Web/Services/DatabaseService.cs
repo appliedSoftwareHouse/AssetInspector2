@@ -1,4 +1,4 @@
-﻿using AppModels;
+﻿using AppModels.Login;
 using Microsoft.Data.SqlClient;
 
 namespace Web.Services
