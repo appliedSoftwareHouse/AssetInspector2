@@ -1,0 +1,133 @@
+﻿@inherits LayoutComponentBase
+@using System.Globalization
+@using Microsoft.JSInterop
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<div class="container-fluid p-0 d-flex flex-column vh-100">
+
+    @* Row 1: Header *@
+    <div class="row g-0 flex-shrink-0 bg-light border-bottom border-secondary" style="height:100px;">
+        <header class="app-header w-100 h-100 d-flex align-items-center justify-content-between px-3">
+            <!-- LEFT SIDE -->
+            <div class="d-flex align-items-center gap-3">
+                <img src="Images/System/Client.gif" alt="Client" class="header-client" />
+                <div class="app-title fs-4 fw-bold text-dark">Asset Inspector 2</div>
+            </div>
+
+            <!-- RIGHT SIDE -->
+            <div class="d-flex align-items-center gap-3">
+                <select class="form-select lang-select w-auto" value="@CurrentLang" @onchange="ChangeLanguage">
+                    <option value="en">English</option>
+                    <option value="ar">العربية</option>
+                </select>
+                <img src="Images/System/MyLogo.gif" alt="Company Logo" class="header-logo" />
+            </div>
+        </header>
+    </div>
+
+    @* Row 2: Video Stage *@
+    <div class="row g-0 flex-grow-1 bg-black" style="min-height:0;">
+        <div class="col h-100 video-wrapper">
+            <!-- Added preload="auto" to help it load faster -->
+            <video @ref="videoElement" id="homeVideo" class="home-video" autoplay muted loop playsinline preload="auto">
+                <source src="videos/AssetInspector.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
+
+            <button type="button" class="btn btn-dark sound-toggle" @onclick="ToggleSound">
+                @(_isMuted ? "🔇 Sound off" : "🔊 Sound on")
+            </button>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private bool _isMuted = true;
+    private ElementReference videoElement;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Wait a tiny moment for Blazor to settle, then force play
+                await Task.Delay(100);
+                await JS.InvokeVoidAsync("eval", "arguments[0].play().catch(e => console.log('Autoplay blocked:', e));", videoElement);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Video Error: " + ex.Message);
+            }
+        }
+    }
+
+    private async Task ToggleSound()
+    {
+        _isMuted = !_isMuted;
+
+        // REMOVED the crashing "if (videoElement.Context != null)" check
+        try
+        {
+            await JS.InvokeVoidAsync("eval", $"arguments[0].muted = {(_isMuted ? "true" : "false")};", videoElement);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("JS Error: " + ex.Message);
+        }
+    }
+
+    private string CurrentLang => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
+    private void ChangeLanguage(ChangeEventArgs e)
+    {
+        var culture = e.Value?.ToString() ?? "en";
+        var returnUrl = "/" + Nav.ToBaseRelativePath(Nav.Uri);
+        Nav.NavigateTo($"/culture/set?culture={culture}&redirectUri={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
+    }
+}
+
+<style>
+    .header-logo {
+        height: 50px;
+        width: auto;
+        object-fit: contain;
+    }
+
+    .header-client {
+        height: 50px;
+        width: auto;
+        object-fit: contain;
+    }
+
+    .lang-select {
+        max-width: 120px;
+        background-color: white;
+        color: black;
+        border: 1px solid #ccc;
+    }
+
+    .video-wrapper {
+        position: relative;
+    }
+
+    .home-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .sound-toggle {
+        position: absolute;
+        right: 1.5rem;
+        bottom: 1.5rem;
+        opacity: 0.85;
+    }
+
+        .sound-toggle:hover {
+            opacity: 1;
+        }
+</style>
