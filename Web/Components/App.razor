@@ -1,9 +1,7 @@
-﻿@using System.Globalization
-
+﻿@* File: App.razor *@
+@using System.Globalization
 
 <!DOCTYPE html>
-@* <html lang="en">
- *@
 
 
 <html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName"
@@ -25,21 +23,9 @@
 <body>
     <Routes @rendermode="InteractiveServer" />
     <ReconnectModal />
+    <script src="Videos/video.js"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
     <script src="lib/bootstrap/js/bootstrap.bundle.js"></script>
-
-    <script>
-            // Wait for the page to load, then force the video to play
-            document.addEventListener("DOMContentLoaded", function() {
-                const video = document.getElementById('homeVideo');
-                if (video) {
-                    video.muted = true; // Force mute via JS
-                    video.play().catch(error => {
-                        console.log("Autoplay was prevented by the browser:", error);
-                    });
-                }
-            });
-    </script>
 </body>
 
 </html>

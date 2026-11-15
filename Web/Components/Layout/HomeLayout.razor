@@ -1,83 +1,139 @@
-﻿@inherits LayoutComponentBase
-@using System.Globalization
-@using Microsoft.JSInterop
+﻿@using System.Globalization
+@inherits LayoutComponentBase
 @inject NavigationManager Nav
-@inject IJSRuntime JS
 
-<div class="container-fluid p-0 d-flex flex-column vh-100">
+<div class="app-shell">
+    <header class="app-header">
 
-    @* Row 1: Header *@
-    <div class="row g-0 flex-shrink-0 bg-light border-bottom border-secondary" style="height:100px;">
-        <header class="app-header w-100 h-100 d-flex align-items-center justify-content-between px-3">
-            <!-- LEFT SIDE -->
-            <div class="d-flex align-items-center gap-3">
-                <img src="Images/System/Client.gif" alt="Client" class="header-client" />
-                <div class="app-title fs-4 fw-bold text-dark">Asset Inspector 2</div>
-            </div>
+        <img src="Images/System/MyLogo.gif" alt="Company Logo" class="header-logo" />
 
-            <!-- RIGHT SIDE -->
-            <div class="d-flex align-items-center gap-3">
-                <select class="form-select lang-select w-auto" value="@CurrentLang" @onchange="ChangeLanguage">
-                    <option value="en">English</option>
-                    <option value="ar">العربية</option>
-                </select>
-                <img src="Images/System/MyLogo.gif" alt="Company Logo" class="header-logo" />
-            </div>
-        </header>
-    </div>
+        <div class="app-title">Asset Inspector 2</div>
 
-    @* Row 2: Video Stage *@
-    <div class="row g-0 flex-grow-1 bg-black" style="min-height:0;">
-        <div class="col h-100 video-wrapper">
-            <!-- Added preload="auto" to help it load faster -->
-            <video @ref="videoElement" id="homeVideo" class="home-video" autoplay muted loop playsinline preload="auto">
-                <source src="videos/AssetInspector.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-            </video>
+        <select class="lang-select" value="@CurrentLang" @onchange="ChangeLanguage">
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+        </select>
 
-            <button type="button" class="btn btn-dark sound-toggle" @onclick="ToggleSound">
-                @(_isMuted ? "🔇 Sound off" : "🔊 Sound on")
-            </button>
-        </div>
+        <img src="Images/System/Client.gif" alt="Client" class="header-client" />
+    </header>
+
+    <div class="app-body">
+        <main class="app-content">
+            @Body
+        </main>
     </div>
 
 </div>
 
+<style>
+    .app-shell {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .app-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 70px;
+        padding: 0 20px;
+        background-color: #ffffff;
+        border-bottom: 1px solid #d6d5d5;
+        flex-shrink: 0;
+    }
+
+    .header-logo {
+        height: 50px;
+        width: auto;
+    }
+
+    .header-client {
+        height: 50px;
+        width: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .app-title {
+        flex: 1;
+        text-align: center;
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .app-body {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+    }
+
+
+    .app-sidebar {
+        width: 250px;
+        flex-shrink: 0;
+        background-color: #1f2a44;
+        overflow-x: hidden;
+        overflow-y: auto;
+        white-space: nowrap;
+        transition: width 0.25s ease;
+    }
+
+        .app-sidebar.collapsed {
+            width: 0;
+        }
+
+    .app-content {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    #blazor-error-ui {
+        background: lightyellow;
+        bottom: 0;
+        box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+        display: none;
+        left: 0;
+        padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+        position: fixed;
+        width: 100%;
+        z-index: 1000;
+    }
+
+        #blazor-error-ui .dismiss {
+            cursor: pointer;
+            position: absolute;
+            right: 0.75rem;
+            top: 0.5rem;
+        }
+
+
+
+
+    .menu-toggle {
+        background: none;
+        border: none;
+        font-size: 1.6rem;
+        cursor: pointer;
+        margin-right: 15px;
+        line-height: 1;
+    }
+
+    .lang-select {
+        margin: 0 15px;
+        padding: 4px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #fff;
+    }
+</style>
+
+
 @code {
-    private bool _isMuted = true;
-    private ElementReference videoElement;
+    private bool sidebarOpen = true;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            try
-            {
-                // Wait a tiny moment for Blazor to settle, then force play
-                await Task.Delay(100);
-                await JS.InvokeVoidAsync("eval", "arguments[0].play().catch(e => console.log('Autoplay blocked:', e));", videoElement);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Video Error: " + ex.Message);
-            }
-        }
-    }
-
-    private async Task ToggleSound()
-    {
-        _isMuted = !_isMuted;
-
-        // REMOVED the crashing "if (videoElement.Context != null)" check
-        try
-        {
-            await JS.InvokeVoidAsync("eval", $"arguments[0].muted = {(_isMuted ? "true" : "false")};", videoElement);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("JS Error: " + ex.Message);
-        }
-    }
+    private void ToggleSidebar() => sidebarOpen = !sidebarOpen;
 
     private string CurrentLang => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 
@@ -85,49 +141,9 @@
     {
         var culture = e.Value?.ToString() ?? "en";
         var returnUrl = "/" + Nav.ToBaseRelativePath(Nav.Uri);
-        Nav.NavigateTo($"/culture/set?culture={culture}&redirectUri={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
+
+        Nav.NavigateTo(
+            $"/culture/set?culture={culture}&redirectUri={Uri.EscapeDataString(returnUrl)}",
+            forceLoad: true);
     }
 }
-
-<style>
-    .header-logo {
-        height: 50px;
-        width: auto;
-        object-fit: contain;
-    }
-
-    .header-client {
-        height: 50px;
-        width: auto;
-        object-fit: contain;
-    }
-
-    .lang-select {
-        max-width: 120px;
-        background-color: white;
-        color: black;
-        border: 1px solid #ccc;
-    }
-
-    .video-wrapper {
-        position: relative;
-    }
-
-    .home-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-
-    .sound-toggle {
-        position: absolute;
-        right: 1.5rem;
-        bottom: 1.5rem;
-        opacity: 0.85;
-    }
-
-        .sound-toggle:hover {
-            opacity: 1;
-        }
-</style>
