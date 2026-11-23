@@ -1,49 +1,55 @@
-﻿
-
-using AppModels;
-using Crypto;
+﻿using AppModels.Login;
 
 
 namespace Web.Components.Pages.Login
 {
     public partial class Login
     {
-        //    private string Error = "";
 
-        //    public AppModels.Login UserLogin { get; set; } = new AppModels.Login();
+        private string Error = "";
 
-        //    protected override void OnInitialized()
-        //    {
-        //        // Initialization logic if needed
-        //    }
+        private string ImagePath { get; set; }
+        private string NumberFormat { get; set; }
 
-        //    public void OnLogin()
-        //    {
-        //        Error = "";
 
-        //        // Basic validation
-        //        if (string.IsNullOrWhiteSpace(UserLogin?.UserID))
-        //        {
-        //            Error = "Please enter your user ID 🥺";
-        //            return;
-        //        }
 
-        //        if (string.IsNullOrWhiteSpace(UserLogin?.Password))
-        //        {
-        //            Error = "Don't forget your password! 🔑";
-        //            return;
-        //        }
+        public LoginModel UserLogin { get; set; } = new();
 
-        //        // Handle login logic here
-        //        // Example: call your authentication service
-        //        // If login succeeds, navigate to home page
-        //        // If it fails, set Error message
+        protected override void OnInitialized()
+        {
+            ImagePath = ConfigService.GetValue<string>("AssetImagePath") ?? "";
+            NumberFormat = Global.Format.Number;
+        }
 
-        //        // Placeholder success message (replace with actual auth logic)
-        //        Error = "";
-        //        // NavigationManager.NavigateTo("/");
-        //    }
+        public void OnLogin()
+        {
+            Error = "";
 
-        //}
+            //if (string.IsNullOrWhiteSpace(UserLogin?.UserID))
+            //{
+            //    Error = "Please enter your user ID.";
+            //    return;
+            //}
+
+            //if (string.IsNullOrWhiteSpace(UserLogin?.Password))
+            //{
+            //    Error = "Please enter your password.";
+            //    return;
+            //}
+
+            //DbService.IsConnected();
+
+
+            if (DbService.IsDBExist)
+            {
+                DbService.CreateDataTables();
+            }
+
+
+            // Get the user profile based on the provided UserID and Password from DB
+            // if found. Change User Authentication state to logged in and redirect to the home page.
+        }
+
+
     }
 }

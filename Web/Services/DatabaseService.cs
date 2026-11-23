@@ -1,41 +1,94 @@
-﻿using AppModels.Login;
+﻿using AppModels.DB;
+using DB.Core;
 using Microsoft.Data.SqlClient;
+using System.Text;
 
 namespace Web.Services
 {
-    public class DatabaseService
+    public interface IDatabaseService
     {
-        public SqlConnection GetConnection()
+        bool IsConnected { get; }
+        bool IsDBExist { get; }
+        bool CreateDataTables();
+    }
+
+    public class DatabaseService : IDatabaseService
+    {
+        public IConfiguration Config { get; set; }
+        public CreateDB CreateDBService { get; set; }
+        public SQLiteService LiteService { get; set; }
+
+        public DatabaseService(IConfiguration _config)
         {
-            string connectionString = DB.Core.Connections.GetConnectionString();
-            return new SqlConnection(connectionString);
+            Config = _config;
+
+            string connectionString = Config.GetConnectionString("SQLConnection") ?? "";
+            string SQLiteString = Config.GetConnectionString("SQLiteCreateDB") ?? "";
+
+            string DatabaseName = Config["DatabaseName"] ?? "";
+
+            CreateDBService = new CreateDB(connectionString, DatabaseName);
+            LiteService = new(SQLiteString);
         }
 
-        public Login GetUserLogin(string userId)
+
+        public bool IsConnected => CreateDBService.IsConnected();
+        public bool IsDBExist => CreateDBService.CreateDatabase(); 
+        public bool CreateDataTables()
         {
-            using (var connection = GetConnection())
+            var _Queries = LiteService.GetCreateTableQueries();
+            var IsCreated = false;
+
+
+            if (_Queries.Count == 0)
+                return false;
+
+            using var transaction = CreateDBService.Connection.BeginTransaction();
+
+            try
             {
-                connection.Open();
-                string query = "SELECT UserID, Password FROM Users WHERE UserID = @UserID";
-                using (var command = new SqlCommand(query, connection))
+                foreach (CreateTableQueryModel query in _Queries)
                 {
-                    command.Parameters.AddWithValue("@UserID", userId);
-                    using (var reader = command.ExecuteReader())
+                    IsCreated = CreateNewDataTable(query, transaction);
+                    if (!IsCreated)
                     {
-                        if (reader.Read())
-                        {
-                            return new Login
-                            {
-                                UserID = reader["UserID"].ToString(),
-                                Password = reader["Password"].ToString()
-                            };
-                        }
+                        transaction.Rollback();
+                        return false;
                     }
                 }
+
+                transaction.Commit();
+                return true;
             }
-            return null;
+            catch
+            {
+                transaction.Rollback();
+                return false;
+            }
         }
 
+        private bool CreateNewDataTable(CreateTableQueryModel query, SqlTransaction transaction)
+        {
+            try
+            {
+                var _Text = new StringBuilder();
 
+                _Text.Append($"CREATE TABLE [{query.TableName}] ");
+                _Text.Append(query.ColumnsScript);
+
+                using SqlCommand _Command = new(
+                    _Text.ToString(),
+                    CreateDBService.Connection,
+                    transaction);
+
+                _Command.ExecuteNonQuery();
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

@@ -9,12 +9,13 @@
 
   <ItemGroup>
     <PackageReference Include="bootstrap" Version="5.3.9" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.2" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.15" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AppAuth\AppAuth.csproj" />
+    <ProjectReference Include="..\AppConfig\AppConfig.csproj" />
     <ProjectReference Include="..\AppModels\AppModels.csproj" />
     <ProjectReference Include="..\Crypto\Crypto.csproj" />
     <ProjectReference Include="..\DB.Core\DB.Core.csproj" />

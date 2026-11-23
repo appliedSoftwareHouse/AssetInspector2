@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace AppModels.Login
 {
-    internal class UserProfile
+    public class UserProfile
     {
     }
 
-    public class Login
+    public class LoginModel
     {
-        public string UserID { get; set; }
-        public string Password { get; set; }
+        public string UserID { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 
     

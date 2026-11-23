@@ -1,14 +1,18 @@
 using Web.Components;
 using Microsoft.AspNetCore.Localization;
 using LanguagePack;
+using Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var store = new LanguageStore(
-    Path.Combine(builder.Environment.ContentRootPath, "Data", "language.db"));
+var store = new LanguageStore(Path.Combine(builder.Environment.ContentRootPath, "Data", "language.db"));
 
 builder.Services.AddSingleton(store);
 builder.Services.AddScoped<Translator>();
+builder.Services.AddScoped<IDatabaseService, DatabaseService>();
+builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
+builder.Services.AddSingleton<GlobalService>();
+
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
@@ -47,6 +51,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+
+
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
