@@ -65,15 +65,15 @@ namespace AppConfig
             }
             catch
             {
-                return default;
+                return default!;
             }
 
         }
 
-        public async Task<T?> GetValueAsync<T>(string Key)
+        public async Task<T> GetValueAsync<T>(string Key)
         {
             if (Connection == null)
-                return default;
+                return default!;
 
             try
             {
@@ -87,7 +87,7 @@ namespace AppConfig
                 var result = await cmd.ExecuteScalarAsync();
 
                 if (result == null || result == DBNull.Value)
-                    return default;
+                    return default!;
 
                 Type targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
 
@@ -95,7 +95,7 @@ namespace AppConfig
             }
             catch
             {
-                return default;
+                return default!;
             }
         }
 

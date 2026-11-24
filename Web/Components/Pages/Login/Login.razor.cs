@@ -10,6 +10,7 @@ namespace Web.Components.Pages.Login
 
         private string ImagePath { get; set; }
         private string NumberFormat { get; set; }
+        bool IsDB_OK;
 
 
 
@@ -17,8 +18,8 @@ namespace Web.Components.Pages.Login
 
         protected override void OnInitialized()
         {
-            ImagePath = ConfigService.GetValue<string>("AssetImagePath") ?? "";
-            NumberFormat = Global.Format.Number;
+            ImagePath = Config.GetValue<string>("AssetImagePath") ?? "";
+            NumberFormat = Global.Format.Number!;
         }
 
         public void OnLogin()
@@ -37,17 +38,24 @@ namespace Web.Components.Pages.Login
             //    return;
             //}
 
-            //DbService.IsConnected();
+            
 
+            #region Creating / Patching Database
 
             if (DbService.IsDBExist)
             {
-                DbService.CreateDataTables();
+                
+                IsDB_OK = DbService.CreateDataTables;
+                IsDB_OK = DbService.UpdatePatches;
             }
 
 
-            // Get the user profile based on the provided UserID and Password from DB
-            // if found. Change User Authentication state to logged in and redirect to the home page.
+            if(!IsDB_OK)
+            {
+                Error = "Database is not valid.... Critical Error found";
+            }
+            #endregion
+
         }
 
 

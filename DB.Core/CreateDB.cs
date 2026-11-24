@@ -1,19 +1,33 @@
 ﻿using AppModels.DB;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Text;
 namespace DB.Core
 {
     public class CreateDB
     {
         public SqlConnection Connection { get; private set; }
         public string DatabaseName { get; private set; }
+        public SQLiteClass LiteService { get; set; }
 
         #region Constructor
-        public CreateDB(string connectionString, string _DatabaseName)
+        public CreateDB(string? SQLConnectionString, string? _DatabaseName, string? _SQLiteString)
         {
-            Connection = new SqlConnection(connectionString);
-            DatabaseName = _DatabaseName;
+            if(SQLConnectionString == null || _DatabaseName == null || _SQLiteString == null)
+            {
+                DatabaseName = null!;
+                Connection = null!;
+                LiteService = null!;
+            }
+            else
+            {
+                DatabaseName = _DatabaseName;
+                Connection = new SqlConnection(SQLConnectionString);
+                LiteService = new(_SQLiteString);
+            }
         }
+
+       
         #endregion
 
         #region Core Method
@@ -59,6 +73,39 @@ namespace DB.Core
             }
         }
 
+
+        public bool CreateDataTables()
+        {
+            var _Queries = LiteService.GetCreateTableQueries();
+            var IsCreated = false;
+
+
+            if (_Queries.Count == 0)
+                return false;
+
+            using var transaction = Connection.BeginTransaction();
+
+            try
+            {
+                foreach (CreateTableQueryModel query in _Queries)
+                {
+                    IsCreated = CreateNewDataTable(query, transaction);
+                    if (!IsCreated)
+                    {
+                        transaction.Rollback();
+                        return false;
+                    }
+                }
+
+                transaction.Commit();
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                return false;
+            }
+        }
         public bool CreateTable(string tableName, string columnsScript)
         {
             if (string.IsNullOrWhiteSpace(tableName) ||
@@ -102,39 +149,38 @@ namespace DB.Core
                 }
             }
         }
-        #endregion
-
-        #region Read SQLite DataTable
-
-        public bool CreateTableFromDataTable()
+        private bool CreateNewDataTable(CreateTableQueryModel query, SqlTransaction transaction)
         {
             try
             {
-                // Generate the columns script based on the DataTable schema
-                string columnsScript = string.Empty;
+                var _Text = new StringBuilder();
 
-                var _SQLiteFile = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "System", "CreateDB.db");
-                var _SQLiteService = new SQLiteService($"Source={_SQLiteFile}");
+                _Text.Append($"CREATE TABLE [{query.TableName}] ");
+                _Text.Append(query.ColumnsScript);
 
-                var _Queries = _SQLiteService.GetCreateTableQueries();
-                    
+                using SqlCommand _Command = new(
+                    _Text.ToString(),
+                    Connection,
+                    transaction);
 
-                foreach (var item in _Queries)
-                {
-                    CreateTable(item.TableName, item.ColumnsScript);
-                }
+                _Command.ExecuteNonQuery();
 
                 return true;
             }
-            catch (Exception)
+            catch
             {
-                // Optionally log the exception details before returning fals
                 return false;
             }
         }
 
+        public bool UpdatePatches()
+        {
+            throw new NotImplementedException();
+        }
 
         #endregion
+
+
 
 
     }

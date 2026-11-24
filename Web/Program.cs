@@ -2,16 +2,19 @@ using Web.Components;
 using Microsoft.AspNetCore.Localization;
 using LanguagePack;
 using Web.Services;
+using DB.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var store = new LanguageStore(Path.Combine(builder.Environment.ContentRootPath, "Data", "language.db"));
 
 builder.Services.AddSingleton(store);
-builder.Services.AddScoped<Translator>();
-builder.Services.AddScoped<IDatabaseService, DatabaseService>();
 builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
 builder.Services.AddSingleton<GlobalService>();
+
+builder.Services.AddScoped<Translator>();
+builder.Services.AddScoped<IDatabaseService, DatabaseService>();
+
 
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();

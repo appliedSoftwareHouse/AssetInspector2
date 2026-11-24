@@ -4,12 +4,12 @@ using System.Data;
 
 namespace DB.Core
 {
-    public class SQLiteService
+    public class SQLiteClass
     {
         public SqliteConnection Connection { get; }
 
 
-        public SQLiteService(string connectionString)
+        public SQLiteClass(string connectionString)
         {
             string dbPath = Path.Combine(Directory.GetCurrentDirectory(), connectionString);
             Connection = new SqliteConnection($"Data Source={dbPath}");

@@ -7,8 +7,11 @@ namespace Web.Services
     {
         bool IsConnected { get; }
 
+        
         T GetValue<T>(string Key);
         Task<T> GetValueAsync<T>(string Key);
+        string? SQLConnectionString();
+        T GetConfigValue<T>(string Configkey);
     }
 
 
@@ -26,7 +29,16 @@ namespace Web.Services
         public bool IsConnected => MyModel.IsConnected();
         public T GetValue<T>(string Key) => MyModel.GetValue<T>(Key);
         public async Task<T> GetValueAsync<T>(string Key) => await MyModel.GetValueAsync<T>(Key);
-        
+        public string? SQLConnectionString()
+        {
+            return Config.GetConnectionString("SQLConnection");
+        }
+
+        public T GetConfigValue<T>(string Configkey)
+        {
+            return Config.GetValue<T>("ConfigKey") ?? default! ;
+        }
+
 
     }
 }
