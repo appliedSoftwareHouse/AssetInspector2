@@ -26,20 +26,18 @@ namespace Crypto
             Buffer.BlockCopy(all, 0, salt, 0, SaltSize);
             Buffer.BlockCopy(all, SaltSize, iv, 0, IvSize);
 
-            using (var kdf = new Rfc2898DeriveBytes(key, salt, Iterations, HashAlgorithmName.SHA256))
-            using (var aes = Aes.Create())
-            {
-                aes.Key = kdf.GetBytes(KeySize);
-                aes.IV = iv;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
+            using var kdf = new Rfc2898DeriveBytes(key, salt, Iterations, HashAlgorithmName.SHA256);
+            using var aes = Aes.Create();
+            aes.Key = kdf.GetBytes(KeySize);
+            aes.IV = iv;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
 
-                using (var ms = new MemoryStream(all, SaltSize + IvSize, all.Length - SaltSize - IvSize))
-                using (var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Read))
-                using (var reader = new StreamReader(cs, Encoding.UTF8))
-                {
-                    return reader.ReadToEnd();
-                }
+            using (var ms = new MemoryStream(all, SaltSize + IvSize, all.Length - SaltSize - IvSize))
+            using (var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Read))
+            using (var reader = new StreamReader(cs, Encoding.UTF8))
+            {
+                return reader.ReadToEnd();
             }
         }
     }

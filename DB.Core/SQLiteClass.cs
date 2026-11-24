@@ -56,7 +56,7 @@ namespace DB.Core
         // 2. Get List<DataRow> using ToList()
         public List<CreateTableQueryModel> GetCreateTableQueries()
         {
-            string _Query = "SELECT * FROM [CreateTables];";
+            string _Query = "SELECT * FROM [CreateTables] ORDER BY [SR_NO];";
 
             return [.. GetDataTable(_Query).AsEnumerable().Select(e => new CreateTableQueryModel
                     {
