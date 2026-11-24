@@ -11,8 +11,17 @@ namespace DB.Core
 
         public SQLiteClass(string connectionString)
         {
-            string dbPath = Path.Combine(Directory.GetCurrentDirectory(), connectionString);
-            Connection = new SqliteConnection($"Data Source={dbPath}");
+            string dbPath = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot", connectionString);
+            if(File.Exists(dbPath))
+            {
+                Connection = new SqliteConnection($"Data Source={dbPath}");
+            }
+            else
+            {
+                // Log Error here 
+            }
+
+            
         }
 
 
