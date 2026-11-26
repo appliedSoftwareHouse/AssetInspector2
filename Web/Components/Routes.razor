@@ -1,6 +1,38 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+﻿@using LanguagePack
+@using Microsoft.AspNetCore.Components.Authorization
+@using Web.Components.ErrorPages
+@using Web.Components.Pages
+
+@inject Translator L
+
+@code {
+    private string _CompanyName = string.Empty;
+    private string _NoPageFoundMessage = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _CompanyName = L["CompanyName"];
+        _NoPageFoundMessage = L["NoPageFound"];
+    }
+}
+
+<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <Authorizing>
+                <p>Loading....</p>
+            </Authorizing>
+            <NotAuthorized>
+                <Home />
+            </NotAuthorized>
+           
+        </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <PageTitle>Page Not Found</PageTitle>
+        <LayoutView Layout="@typeof(ErrorLayout)">
+            <PageNotFound/>
+        </LayoutView>
+    </NotFound>
 </Router>

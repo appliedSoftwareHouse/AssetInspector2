@@ -1,0 +1,37 @@
+﻿@page "/Error/DBError"
+@page "/Error/DBError/{Id:int}"
+
+@layout ErrorLayout
+
+@code {
+    [Parameter]
+    public int? Id { get; set; }
+}
+
+
+
+<div class="container">
+
+    @if (Id == 1)
+    {
+        <div class="alert alert-danger" role="alert">
+            Database Error 1
+        </div>
+    }
+
+
+    @if (Id == 2)
+    {
+        <div class="alert alert-danger" role="alert">
+            Database Error 2
+        </div>
+    }
+
+
+    @if (Id == 3)
+    {
+        <div class="alert alert-danger" role="alert">
+            Database Error 3
+        </div>
+    }
+</div>

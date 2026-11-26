@@ -4,6 +4,8 @@
   </Folder>
   <Folder Name="/Common/">
     <Project Path="AppAuth/AppAuth.csproj" />
+    <Project Path="AppConfig/AppConfig.csproj" Id="b6e5a278-0e1f-49c7-a429-5a3d857c7219" />
+    <Project Path="AppEnums/AppEnums.csproj" Id="5f8d8845-da20-4932-98c6-ad945d73010d" />
     <Project Path="AppModels/AppModels.csproj" />
     <Project Path="Crypto/Crypto.csproj" />
   </Folder>

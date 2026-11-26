@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace Crypto
@@ -11,6 +9,8 @@ namespace Crypto
         private const int IvSize = 16;
         private const int KeySize = 32;      // AES-256
         private const int Iterations = 100_000;
+
+
 
         public static string EncryptString(string plainText, string key)
         {

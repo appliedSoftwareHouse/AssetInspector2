@@ -1,41 +1,48 @@
-﻿using AppModels;
+﻿using DB.Core;
 using Microsoft.Data.SqlClient;
 
 namespace Web.Services
 {
-    public class DatabaseService
+    public interface IDatabaseService
     {
-        public SqlConnection GetConnection()
-        {
-            string connectionString = DB.Core.Connections.GetConnectionString();
-            return new SqlConnection(connectionString);
-        }
+        bool IsConnected { get; }
+        bool IsDBExist { get; }
+        bool CreateDataTables { get; }
+        bool UpdatePatches { get; }
+        bool CreateAdminAccount { get; }
+        DBContextClass DBContext { get; set; }
+        SqlConnection Connection => DBContext.Connection;
+    }
 
-        public Login GetUserLogin(string userId)
+    public class DatabaseService : IDatabaseService
+    {
+        public CreateDB CreateDBService { get; set; }
+        public DBContextClass DBContext { get; set; }
+
+
+        public DatabaseService(IConfigurationService Config)
         {
-            using (var connection = GetConnection())
+            var _SQLConnectionString = Config.SQLConnectionString();
+            var _DataBaseName = Config.GetValue<string>("DataBaseName");
+            var _SQLiteString = Config.GetValue<string>("SQLiteCreateDB");
+
+            if( _SQLConnectionString != null)
             {
-                connection.Open();
-                string query = "SELECT UserID, Password FROM Users WHERE UserID = @UserID";
-                using (var command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@UserID", userId);
-                    using (var reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            return new Login
-                            {
-                                UserID = reader["UserID"].ToString(),
-                                Password = reader["Password"].ToString()
-                            };
-                        }
-                    }
-                }
+                CreateDBService = new(_SQLConnectionString, _DataBaseName, _SQLiteString);
+                DBContext = new(_SQLConnectionString);
             }
-            return null;
+            else
+            {
+                CreateDBService = null!;
+                DBContext = null!;
+            }
         }
 
-
+        public bool IsConnected => CreateDBService.IsConnected();
+        public bool IsDBExist => CreateDBService.CreateDatabase();
+        public bool CreateDataTables => CreateDBService.CreateDataTables();
+        public bool UpdatePatches => CreateDBService.UpdatePatches();
+        public bool CreateAdminAccount => CreateDBService.CreateAdminUser();
     }
 }
+

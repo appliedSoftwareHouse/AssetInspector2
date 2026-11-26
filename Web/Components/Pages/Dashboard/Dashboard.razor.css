@@ -1,0 +1,38 @@
+﻿.dash-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 equal columns */
+    grid-template-rows: 1fr 1fr; /* 2 equal rows */
+    gap: 16px;
+    /* viewport height minus header (~80px) minus the <h3> title and padding */
+    height: calc(100vh - 80px - 90px);
+    min-height: 500px;
+}
+
+.dash-box {
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* lets the inner table area scroll */
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+    .dash-box h5 {
+        margin: 0 0 8px;
+    }
+
+.dash-table-wrap {
+    flex: 1;
+    overflow: auto; /* scroll inside the box */
+}
+
+/* stack on small screens */
+@media (max-width: 900px) {
+    .dash-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: none;
+        height: auto;
+    }
+}

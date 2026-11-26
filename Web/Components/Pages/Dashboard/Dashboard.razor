@@ -1,0 +1,91 @@
+﻿@page "/Dashboard"
+@attribute [Authorize]
+
+
+<h3>Dashboard</h3>
+
+<div class="dash-grid">
+
+    <section class="dash-box">
+        <h5>Assets by Status</h5>
+        <div class="dash-table-wrap">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr><th>Status</th><th>Count</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in statusRows)
+                    {
+                        <tr><td>@r.Name</td><td>@r.Count</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="dash-box">
+        <h5>Assets by Location</h5>
+        <div class="dash-table-wrap">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr><th>Location</th><th>Count</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in locationRows)
+                    {
+                        <tr><td>@r.Name</td><td>@r.Count</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="dash-box">
+        <h5>Recent Transfers</h5>
+        <div class="dash-table-wrap">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr><th>Asset</th><th>From</th><th>To</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Laptop 001</td><td>IT</td><td>HR</td></tr>
+                    <tr><td>Printer 014</td><td>Store</td><td>Finance</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="dash-box">
+        <h5>Pending Inspections</h5>
+        <div class="dash-table-wrap">
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr><th>Asset</th><th>Due Date</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Projector 007</td><td>2026-12-01</td></tr>
+                    <tr><td>Server 003</td><td>2026-12-05</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+@code {
+    private record Row(string Name, int Count);
+
+    private List<Row> statusRows = new()
+    {
+        new("Active", 120),
+        new("In Repair", 8),
+        new("Disposed", 15)
+    };
+
+    private List<Row> locationRows = new()
+    {
+        new("Main Building", 80),
+        new("Warehouse", 45),
+        new("Branch Office", 18)
+    };
+}

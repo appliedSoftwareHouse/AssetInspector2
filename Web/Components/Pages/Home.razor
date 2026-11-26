@@ -2,15 +2,17 @@
 @layout HomeLayout
 @rendermode InteractiveServer
 @inject IJSRuntime JS
+@inject NavigationManager Nav
 
 <PageTitle>Home</PageTitle>
-
 
 <div class="video-container">
     <video @ref="videoElement" id="homeVideo" class="home-video"
            autoplay muted loop playsinline preload="auto">
         <source src="videos/AssetInspector.mp4" type="video/mp4" />
     </video>
+
+    
 
     <button type="button" class="btn btn-dark sound-toggle" @onclick="ToggleSound">
         @(_isMuted ? "🔇 Sound off" : "🔊 Sound on")
@@ -32,15 +34,15 @@
         _isMuted = !_isMuted;
         await JS.InvokeVoidAsync("videoHelper.setMuted", videoElement, _isMuted);
     }
+
+    
 }
 
 <style>
-    
-
     .video-container {
         position: relative;
         width: 100%;
-        height: 100%; /* Fills the layout row completely */
+        height: 100%;
         overflow: hidden;
     }
 
@@ -50,16 +52,30 @@
         left: 0;
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Scales the video to fill the frame without stretching */
+        object-fit: cover;
         display: block;
     }
+
+    .login-btn {
+        position: absolute;
+        top: 1.5rem;
+        inset-inline-start: 1.5rem; /* top-left in LTR, top-right in RTL */
+        z-index: 10;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+        .login-btn:hover {
+            opacity: 1;
+        }
 
     .sound-toggle {
         position: absolute;
         right: 1.5rem;
         bottom: 1.5rem;
         opacity: 0.85;
-        z-index: 10; /* Keeps the button on top of the video */
+        z-index: 10;
     }
 
         .sound-toggle:hover {
