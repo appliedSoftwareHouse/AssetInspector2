@@ -21,6 +21,8 @@ namespace Web.Components.Pages.Login
         {
             ImagePath = Config.GetValue<string>("AssetImagePath") ?? "";
             NumberFormat = Global.Format.Number!;
+
+            ImagePath = Keys.Get<string>("AppImages");
         }
 
         public async Task OnLogin()

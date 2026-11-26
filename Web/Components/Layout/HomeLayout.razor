@@ -1,10 +1,13 @@
-﻿@using System.Globalization
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 @inject NavigationManager Nav
 
 
 @code{
-    private void GoToLogin() => Nav.NavigateTo("/login");
+    private void GoToLogin()
+    {
+        Nav.NavigateTo("/login");
+    }
+    
 }
 
 <div class="app-shell">
