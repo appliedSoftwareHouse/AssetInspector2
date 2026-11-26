@@ -24,6 +24,10 @@ namespace DB.Core
             
         }
 
+        public SQLiteClass()
+        {
+        }
+
 
         // 1. Get full DataTable
         public DataTable GetDataTable(string query, params SqliteParameter[] parameters)

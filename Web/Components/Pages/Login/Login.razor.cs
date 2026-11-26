@@ -1,6 +1,5 @@
 ﻿using AppModels.Login;
 using Crypto;
-using DB.Core;
 
 
 namespace Web.Components.Pages.Login
@@ -15,6 +14,7 @@ namespace Web.Components.Pages.Login
 
 
 
+
         public LoginModel UserLogin { get; set; } = new();
 
         protected override void OnInitialized()
@@ -23,12 +23,12 @@ namespace Web.Components.Pages.Login
             NumberFormat = Global.Format.Number!;
         }
 
-        public void OnLogin()
+        public async Task OnLogin()
         {
             Error = string.Empty;
 
             // Validate Database, Create Db if not exist and add Admin User Account.
-            if (ValidateDB()) { NavManager.NavigateTo("/Error/DBError/2"); }
+            if (!ValidateDB()) { NavManager.NavigateTo("/Error/DBError/2"); }
 
 
             if (string.IsNullOrWhiteSpace(UserLogin?.UserID))
@@ -45,26 +45,29 @@ namespace Web.Components.Pages.Login
 
             if (Error == string.Empty)
             {
+                var LoginService = new AppAuth.LoginClass(DbService.Connection, Config.MyModel);
 
-
-
-
-                var db = DbService.DBContext;
-
-                if (db.IsConnected)
+                if (LoginService.IsConnected)
                 {
                     var _LoginModel = new LoginModel()
                     {
                         UserID = UserLogin.UserID,
-                        Password = UserLogin.Password,
-                        PasswordHash = string.Empty
+                        Password = string.Empty,
+                        PasswordHash = Encrypt.EncryptString(UserLogin.Password, "Modern"),
+                        RememberMe = false
                     };
 
-                    UserProfile? _UserProfile = db.GetUserProfile(_LoginModel);
+                    UserProfile? _UserProfile = LoginService.GetUserProfile(_LoginModel);
 
-                    if (_UserProfile == null)
+                    if (_UserProfile.IsLogin)
                     {
-                        NavManager.NavigateTo("/Error/DBError/3");
+                        await UserAuth.SignInAsync(_UserProfile);
+                        NavManager.NavigateTo("/Dashboard");
+
+                    }
+                    else
+                    {
+                        Error = L[_UserProfile.LoginMessage];
                     }
                 }
             }
@@ -72,6 +75,8 @@ namespace Web.Components.Pages.Login
 
         private bool ValidateDB()
         {
+            // Createing a new Database instance if not exist, create all data table and system and Admin User default Account
+
             bool _result = false;
 
             if (DbService.IsDBExist)

@@ -2,6 +2,11 @@
 @inherits LayoutComponentBase
 @inject NavigationManager Nav
 
+
+@code{
+    private void GoToLogin() => Nav.NavigateTo("/login");
+}
+
 <div class="app-shell">
     <header class="app-header">
 
@@ -9,10 +14,9 @@
 
         <div class="app-title">Asset Inspector 2</div>
 
-        <select class="lang-select" value="@CurrentLang" @onchange="ChangeLanguage">
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-        </select>
+        <button type="button" class="btn btn-primary m-3" @onclick="GoToLogin">
+            Login
+        </button>
 
         <img src="Images/System/Client.gif" alt="Client" class="header-client" />
     </header>
@@ -51,7 +55,7 @@
     .header-client {
         height: 50px;
         width: 50px;
-        border-radius: 50%;
+        border-radius: 20%;
         object-fit: cover;
     }
 
@@ -106,19 +110,19 @@
 
 
 @code {
-    private bool sidebarOpen = true;
+    // private bool sidebarOpen = true;
 
-    private void ToggleSidebar() => sidebarOpen = !sidebarOpen;
+    // private void ToggleSidebar() => sidebarOpen = !sidebarOpen;
 
-    private string CurrentLang => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+    // private string CurrentLang => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
 
-    private void ChangeLanguage(ChangeEventArgs e)
-    {
-        var culture = e.Value?.ToString() ?? "en";
-        var returnUrl = "/" + Nav.ToBaseRelativePath(Nav.Uri);
+    // private void ChangeLanguage(ChangeEventArgs e)
+    // {
+    //     var culture = e.Value?.ToString() ?? "en";
+    //     var returnUrl = "/" + Nav.ToBaseRelativePath(Nav.Uri);
 
-        Nav.NavigateTo(
-            $"/culture/set?culture={culture}&redirectUri={Uri.EscapeDataString(returnUrl)}",
-            forceLoad: true);
-    }
+    //     Nav.NavigateTo(
+    //         $"/culture/set?culture={culture}&redirectUri={Uri.EscapeDataString(returnUrl)}",
+    //         forceLoad: true);
+    // }
 }

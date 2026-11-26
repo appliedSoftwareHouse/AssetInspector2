@@ -20,7 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AppConfig\AppConfig.csproj" />
     <ProjectReference Include="..\AppModels\AppModels.csproj" />
+    <ProjectReference Include="..\Crypto\Crypto.csproj" />
   </ItemGroup>
 
 </Project>

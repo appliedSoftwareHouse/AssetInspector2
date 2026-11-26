@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Crypto;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 
@@ -8,20 +9,42 @@ namespace AppConfig
     {
         public IConfiguration Config { get; set; }
         private SqliteConnection? Connection { get; set; }
+        private string ConnectionString { get; set; }
+        
 
         private string QueryKey = "SELECT [Value] FROM  [ConfigKeys] WHERE [Key] = @Key";
         
         public ConfigModel(IConfiguration _config)
         {
             Config = _config;
-            string connectionString = Config.GetConnectionString("SQLiteConfigDB") ?? "";
-            if(!string.IsNullOrWhiteSpace(connectionString))
+            ConnectionString = Config.GetConnectionString("SQLiteConfigDB") ?? "";
+            if(!string.IsNullOrWhiteSpace(ConnectionString))
             {
 
-                string dbPath = Path.Combine(Directory.GetCurrentDirectory(), connectionString);
+                string dbPath = Path.Combine(Directory.GetCurrentDirectory(), ConnectionString);
                 Connection = new SqliteConnection($"Data Source={dbPath}");
             }
 
+        }
+
+        public ConfigModel(string _ConnectionString)
+        {
+            ConnectionString = _ConnectionString;
+            if (!string.IsNullOrWhiteSpace(ConnectionString))
+            {
+                string dbPath = Path.Combine(Directory.GetCurrentDirectory(), ConnectionString);
+                Connection = new SqliteConnection($"Data Source={dbPath}");
+            }
+        }
+
+        public ConfigModel()
+        {
+        }
+
+        public string GetSQLiteConnectionString()
+        {
+            return Encrypt.EncryptString(ConnectionString, "SQLite");
+            
         }
 
         public bool IsConnected()

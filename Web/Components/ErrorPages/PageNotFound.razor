@@ -1,0 +1,31 @@
+﻿
+
+@code {
+    private string _CompanyName = string.Empty;
+    private string _NoPageFoundMessage = string.Empty;
+    private string _BackHome = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _CompanyName = L["CompanyName"];
+        _NoPageFoundMessage = L["NoPageFound"];
+        _BackHome = L["BackHome"];
+    }
+
+    private void GoHome()
+    {
+        Nav.NavigateTo("/Dashboard");
+    }
+}
+
+
+<div class="nf-wrapper">
+    <div class="nf-card">
+        <div class="nf-code" aria-hidden="true">404</div>
+
+        <h5 class="nf-company">@_CompanyName</h5>
+        <h3 class="nf-message">@_NoPageFoundMessage</h3>
+
+        <a href="/" class="btn btn-primary nf-btn" @onclick="GoHome">  @_BackHome</a>
+    </div>
+</div>

@@ -1,0 +1,47 @@
+﻿.nf-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e8eef7 100%);
+}
+
+.nf-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 3rem 2rem;
+    text-align: center;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.nf-code {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #2563eb;
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+}
+
+.nf-company {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.nf-message {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1.75rem;
+}
+
+.nf-btn {
+    padding: 0.6rem 1.75rem;
+    border-radius: 8px;
+}

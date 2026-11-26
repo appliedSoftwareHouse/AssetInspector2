@@ -12,9 +12,7 @@
         <source src="videos/AssetInspector.mp4" type="video/mp4" />
     </video>
 
-    <button type="button" class="btn btn-primary login-btn" @onclick="GoToLogin">
-        Login
-    </button>
+    
 
     <button type="button" class="btn btn-dark sound-toggle" @onclick="ToggleSound">
         @(_isMuted ? "🔇 Sound off" : "🔊 Sound on")
@@ -37,7 +35,7 @@
         await JS.InvokeVoidAsync("videoHelper.setMuted", videoElement, _isMuted);
     }
 
-    private void GoToLogin() => Nav.NavigateTo("/login");
+    
 }
 
 <style>

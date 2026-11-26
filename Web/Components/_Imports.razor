@@ -3,11 +3,16 @@
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
-@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Web.Virtualization
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
 @using Microsoft.JSInterop
 @using Web
 @using Web.Components
 @using Web.Components.Layout
 @using System.Globalization
+@using LanguagePack
+@using AppConfig
 
+@inject Translator L
+@inject NavigationManager Nav

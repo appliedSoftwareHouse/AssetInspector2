@@ -19,7 +19,9 @@ namespace AppModels.Login
         public DateTime ReleaseTime { get; set; }
         public int LoginAttempts { get; set; } = 0;
         public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
         public bool RememberMe { get; set; }
         public bool IsLocked => LoginAttempts >= 5 && DateTime.Now < ReleaseTime;
     }
+
 }

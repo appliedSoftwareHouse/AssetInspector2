@@ -1,11 +1,17 @@
 ﻿@page "/login"
+@using AppAuth
+@using LanguagePack
+
 @using Web.Services
 @layout LoginLayout
-
+@attribute [AllowAnonymous]
 @inject IDatabaseService DbService
 @inject IConfigurationService Config
 @inject GlobalService Global
 @inject NavigationManager NavManager
+@inject Translator L 
+@inject IUserAuthService UserAuth
+
 
 <div class="login-container">
     <div class="login-card">
@@ -41,6 +47,14 @@
                        @bind:event="oninput" />
             </div>
 
+            <div class="form-group form-checkbox">
+                <input id="rememberMe"
+                       type="checkbox"
+                       class="checkbox-input"
+                       @bind="UserLogin.RememberMe" />
+                <label class="checkbox-label" for="rememberMe">Remember me</label>
+            </div>
+
             @if (!string.IsNullOrEmpty(Error))
             {
                 <div class="form-error" role="alert">
@@ -65,8 +79,3 @@
     </div>
 </div>
 
-
-
-@code {
-    
-}

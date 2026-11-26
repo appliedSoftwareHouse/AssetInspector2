@@ -1,5 +1,4 @@
-﻿using Microsoft.Data.Sqlite;
-using AppConfig;
+﻿using AppConfig;
 
 namespace Web.Services
 {
@@ -11,7 +10,9 @@ namespace Web.Services
         T GetValue<T>(string Key);
         Task<T> GetValueAsync<T>(string Key);
         string? SQLConnectionString();
+        string? SQLiteConnectionString();
         T GetConfigValue<T>(string Configkey);
+        ConfigModel MyModel { get; set; }
     }
 
 
@@ -39,6 +40,9 @@ namespace Web.Services
             return Config.GetValue<T>("ConfigKey") ?? default! ;
         }
 
-
+        public string? SQLiteConnectionString()
+        {
+            return MyModel.GetSQLiteConnectionString();
+        }
     }
 }

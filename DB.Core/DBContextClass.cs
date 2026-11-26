@@ -1,4 +1,4 @@
-﻿using AppModels.Login;
+﻿using AppConfig;
 using Crypto;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -7,12 +7,21 @@ namespace DB.Core
 {
     public class DBContextClass
     {
-        private SqlConnection Connection;
+        public readonly SqlConnection Connection;
+        public ConfigModel? Config { get; set; }
         public bool IsConnected => Is_Connected();
+        public AppAuth.LoginClass MyLogin;
 
-        public DBContextClass(string _ConnectionStraing)
+        public DBContextClass(string _ConnectionString)
         {
-            Connection = new(_ConnectionStraing);
+            Connection = new(_ConnectionString);
+            MyLogin = new(Connection, Config!);
+        }
+
+        public void SetConfig(string ConnectionHash)
+        {
+            var _ConnectionString = Decrypt.DecryptString(ConnectionHash, "SQLite");
+            Config = new(_ConnectionString);
         }
 
         private bool Is_Connected()
@@ -22,104 +31,16 @@ namespace DB.Core
                 if (Connection.State != ConnectionState.Open) { Connection.Open(); }
                 return Connection.State == ConnectionState.Open;
             }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        public UserProfile? GetUserProfile(LoginModel loginModel)
-        {
-            var _UserProfile = new UserProfile();
-
-            try
-            {
-
-                var _Query = $@"
-                            SELECT
-                                [UserName],
-                                [PasswordHash],
-                                [FullName],
-                                [Email],
-                                [PhoneNumber],
-                                [IsActive],
-                                [DefaultLanguageID],
-                                [TwoFactorEnabled],
-                                [LockoutEnabled],
-                                [LockoutEndDateUtc],
-                                [AccessFailedCount]
-                            FROM [Web2].[dbo].[Users]
-                            WHERE [UserName] = @UserName;";
-
-                using SqlCommand _Command = new(_Query, Connection);
-
-                _Command.Parameters.AddWithValue("@UserName", loginModel.UserID);
-                //_Command.Parameters.AddWithValue("@PasswordHash", loginModel.PasswordHash);
-
-                using SqlDataReader _Reader = _Command.ExecuteReader();
-
-                if (_Reader.Read())
-                {
-                    
-                    _UserProfile.UserName = _Reader["UserName"]?.ToString() ?? "";
-                    _UserProfile.FullName = _Reader["FullName"]?.ToString() ?? "";
-                    _UserProfile.Email = _Reader["Email"]?.ToString() ?? "";
-                    _UserProfile.Phone = _Reader["PhoneNumber"]?.ToString() ?? "";
-
-                    _UserProfile.IsActive = Convert.ToBoolean(_Reader["IsActive"]);
-
-                    _UserProfile.Language = _Reader["DefaultLanguageID"]?.ToString() ?? "";
-
-                    _UserProfile.MFAuth = Convert.ToBoolean(_Reader["TwoFactorEnabled"]);
-
-                    _UserProfile.IsLock = Convert.ToBoolean(_Reader["LockoutEnabled"]);
-
-                    _UserProfile.LockOutTime =
-                        _Reader["LockoutEndDateUtc"] == DBNull.Value
-                        ? null
-                        : Convert.ToDateTime(_Reader["LockoutEndDateUtc"]);
-
-                    _UserProfile.LogonAttampt = Convert.ToInt32(_Reader["AccessFailedCount"]);
-
-
-                    var _DecryptPW = Decrypt.DecryptString(_Reader["PasswordHash"]?.ToString() ?? "", "Modern");
-
-                    if (_DecryptPW.Equals(loginModel.Password))
-                    {
-                        return _UserProfile;
-                    }
-
-
-
-                }
-            }
-            catch
-            {
-                return null;
-            }
-            return null;
-
-        }
-
-        public bool UpdateLoginAttempt(string UserName)
-        {
-            try
-            {
-                var _SQL = @"
-            UPDATE [dbo].[Users]
-            SET [AccessFailedCount] = ISNULL([AccessFailedCount], 0) + 1
-            WHERE [UserName] = @UserName;";
-
-                using SqlCommand _Command = new(_SQL, Connection);
-
-                _Command.Parameters.AddWithValue("@UserName", UserName);
-
-                return _Command.ExecuteNonQuery() > 0;
-            }
             catch
             {
                 return false;
             }
         }
+
+
+
+        //public UserProfile? => MyLogin.GetUserProfile(loginModel);
+       
+
     }
 }

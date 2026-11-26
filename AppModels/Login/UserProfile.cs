@@ -5,25 +5,24 @@ namespace AppModels.Login
     {
         public UserProfile() { }
 
-        public string UserName { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
+        public string UserID { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
+        public string DisplayName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string Designation { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public string Language { get; set; } = string.Empty;
         public bool? MFAuth { get; set; }
         public bool IsLock { get; set; }
         public DateTime? LockOutTime { get; set; } 
+        public DateTime LoginTime { get; set; } 
         public int LogonAttampt { get; set; }
         public string UserRole { get; set; } = string.Empty;
+        public bool IsLogin { get; set; }
+        public string LoginMessage { get; set; } = string.Empty;
+        public Guid Session = Guid.NewGuid();
+        public bool RememberMe { get; set; }
+        
     }
-
-    public class LoginModel
-    {
-        public string UserID { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
-    }
-
-    
 }

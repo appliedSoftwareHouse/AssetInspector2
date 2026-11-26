@@ -1,4 +1,5 @@
 ﻿using DB.Core;
+using Microsoft.Data.SqlClient;
 
 namespace Web.Services
 {
@@ -10,6 +11,7 @@ namespace Web.Services
         bool UpdatePatches { get; }
         bool CreateAdminAccount { get; }
         DBContextClass DBContext { get; set; }
+        SqlConnection Connection => DBContext.Connection;
     }
 
     public class DatabaseService : IDatabaseService
