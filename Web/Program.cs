@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using Web.Data;
 using AppAuth;
 using LanguagePack;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -22,23 +24,26 @@ builder.Services.AddScoped<Translator>();
 builder.Services.AddScoped<IDatabaseService, DatabaseService>();
 
 builder.Services.AddScoped<UserAuthStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(sp =>sp.GetRequiredService<UserAuthStateProvider>());
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<UserAuthStateProvider>());
 builder.Services.AddScoped<IUserAuthService, UserAuthService>();
 
-
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
-
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/login"; // Adjust to your login page route
-        options.AccessDeniedPath = "/access-denied"; // Optional
+        options.LoginPath = "/login";
+        options.AccessDeniedPath = "/access-denied";
         options.Cookie.Name = "AssetsInspectorCookie";
-
     });
 
-
+// =========================================================
+// YEH NAYI LINES ADD KI HAIN APNE DATABASE KE LIYE
+// =========================================================
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "Data Source=translations.db";
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
+    options.UseSqlite(connectionString));
+// =========================================================
 
 var app = builder.Build();
 
@@ -65,7 +70,7 @@ app.MapGet("/culture/set", (string culture, string redirectUri, HttpContext http
             });
     }
     return Results.LocalRedirect(redirectUri);
-}).AllowAnonymous(); 
+}).AllowAnonymous();
 
 #endregion
 
@@ -75,7 +80,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-
 
 app.UseHttpsRedirection();
 
@@ -87,6 +91,6 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
-    .AllowAnonymous(); 
+    .AllowAnonymous();
 
 app.Run();

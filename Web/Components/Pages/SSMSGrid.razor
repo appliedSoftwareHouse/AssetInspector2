@@ -1,0 +1,273 @@
+﻿@page "/LangPage"
+@rendermode InteractiveServer
+@using Web.Data
+@using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<AppDbContext> DbFactory
+
+<div class="ssms-container">
+    <!-- Menubar hata diya gaya hai -->
+
+    <div class="ssms-toolbar">
+        <!-- Navigation Buttons -->
+        <button class="tool-btn" @onclick="MoveFirst" title="First Row">◀◀</button>
+        <button class="tool-btn" @onclick="MovePrevious" title="Previous Row">◀</button>
+        <button class="tool-btn" @onclick="MoveNext" title="Next Row">▶</button>
+        <button class="tool-btn" @onclick="MoveLast" title="Last Row">▶▶</button>
+
+        <span class="toolbar-divider"></span>
+
+        <!-- Action Buttons -->
+        <button class="tool-btn" @onclick="AddNewRow" title="Add New Row">✚</button>
+        <button class="tool-btn" @onclick="DeleteRow" title="Delete Row">✖</button>
+        <button class="tool-btn" @onclick="SaveChanges" title="Save Changes">✔</button>
+    </div>
+
+    <div class="ssms-grid-container">
+        <table class="ssms-table">
+            <thead>
+                <tr>
+                    <th>rowid</th>
+                    <th>LangCode</th>
+                    <th>WordKey</th>
+                    <th>WordValue (English)</th>
+                    <th>WordValue (Arabic)</th>
+                </tr>
+                <tr class="filter-row">
+                    <th colspan="5">
+                        <input type="text" placeholder="Click here to define a filter" class="filter-input"
+                               @bind="FilterText" @bind:event="oninput" />
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (FilteredTranslations == null || !FilteredTranslations.Any())
+                {
+                    <tr><td colspan="5">No data found.</td></tr>
+                }
+                else
+                {
+                    @foreach (var item in FilteredTranslations)
+                    {
+                        <tr @onclick="() => SelectRow(item)"
+                            class="@(SelectedRow == item ? "selected-row" : "")">
+
+                            <td>@item.RowId</td>
+
+                            <td @ondblclick="() => StartEditing(item, nameof(item.LangCode))">
+                                @if (IsEditing(item, nameof(item.LangCode)))
+                                {
+                                    <input type="text" class="cell-input" @ref="editingInputRef"
+                                           @bind="item.LangCode" @bind:event="oninput"
+                                           @onblur="StopEditing" @onkeydown="HandleKeyDown" />
+                                }
+                                else
+                                {
+
+                                    @item.LangCode
+                                }
+                            </td>
+
+                            <td @ondblclick="() => StartEditing(item, nameof(item.WordKey))">
+                                @if (IsEditing(item, nameof(item.WordKey)))
+                                {
+                                    <input type="text" class="cell-input" @ref="editingInputRef"
+                                           @bind="item.WordKey" @bind:event="oninput"
+                                           @onblur="StopEditing" @onkeydown="HandleKeyDown" />
+                                }
+                                else
+                                {
+
+                                    @item.WordKey
+                                }
+                            </td>
+
+                            <td dir="ltr" @ondblclick="() => StartEditing(item, nameof(item.EnglishValue))">
+                                @if (IsEditing(item, nameof(item.EnglishValue)))
+                                {
+                                    <input type="text" class="cell-input" @ref="editingInputRef"
+                                           @bind="item.EnglishValue" @bind:event="oninput"
+                                           @onblur="StopEditing" @onkeydown="HandleKeyDown" />
+                                }
+                                else
+                                {
+
+                                    @item.EnglishValue
+                                }
+                            </td>
+
+                            <td dir="rtl" style="text-align: right;" @ondblclick="() => StartEditing(item, nameof(item.ArabicValue))">
+                                @if (IsEditing(item, nameof(item.ArabicValue)))
+                                {
+                                    <input type="text" class="cell-input" style="text-align: right;" @ref="editingInputRef"
+                                           @bind="item.ArabicValue" @bind:event="oninput"
+                                           @onblur="StopEditing" @onkeydown="HandleKeyDown" />
+                                }
+                                else
+                                {
+
+                                    @item.ArabicValue
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    public class TranslationViewModel
+    {
+        public int RowId { get; set; }
+        public string LangCode { get; set; } = "";
+        public string WordKey { get; set; } = "";
+        public string EnglishValue { get; set; } = "";
+        public string ArabicValue { get; set; } = "";
+    }
+
+    private List<TranslationViewModel> groupedTranslations = new();
+    private TranslationViewModel? SelectedRow = null;
+    private string FilterText = "";
+
+    private TranslationViewModel? EditingRow = null;
+    private string? EditingColumn = null;
+
+    private ElementReference editingInputRef;
+
+    private IEnumerable<TranslationViewModel> FilteredTranslations =>
+        string.IsNullOrWhiteSpace(FilterText)
+            ? groupedTranslations
+            : groupedTranslations.Where(x =>
+                x.WordKey.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ||
+                x.EnglishValue.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ||
+                x.ArabicValue.Contains(FilterText, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataFromDatabase();
+    }
+
+    private async Task LoadDataFromDatabase()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+
+        await context.Database.EnsureCreatedAsync();
+
+        if (!context.Translations.Any())
+        {
+            context.Translations.AddRange(
+                new TranslationModel { RowId = 1, LangCode = "en", WordKey = "Home", EnglishValue = "Home", ArabicValue = "الرئيسية" },
+                new TranslationModel { RowId = 2, LangCode = "en", WordKey = "Login", EnglishValue = "Login", ArabicValue = "تسجيل الدخول" }
+            );
+            await context.SaveChangesAsync();
+        }
+
+        var dataFromDb = await context.Translations.OrderBy(x => x.RowId).ToListAsync();
+
+        groupedTranslations = dataFromDb.Select(db => new TranslationViewModel
+        {
+            RowId = db.RowId,
+            LangCode = db.LangCode,
+            WordKey = db.WordKey,
+            EnglishValue = db.EnglishValue,
+            ArabicValue = db.ArabicValue
+        }).ToList();
+
+        SelectedRow = null;
+        StopEditing();
+    }
+
+    private async Task SaveChanges()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+
+        context.Translations.RemoveRange(context.Translations);
+        await context.SaveChangesAsync();
+
+        var modelsToSave = groupedTranslations.Select(x => new TranslationModel
+        {
+            RowId = x.RowId,
+            LangCode = x.LangCode,
+            WordKey = x.WordKey,
+            EnglishValue = x.EnglishValue,
+            ArabicValue = x.ArabicValue
+        }).ToList();
+
+        context.Translations.AddRange(modelsToSave);
+        await context.SaveChangesAsync();
+
+        await LoadDataFromDatabase();
+
+        Console.WriteLine("Data successfully saved to Database!");
+    }
+
+    private void SelectRow(TranslationViewModel row)
+    {
+        if (EditingRow == null) SelectedRow = row;
+    }
+
+    private async Task StartEditing(TranslationViewModel row, string columnName)
+    {
+        SelectedRow = row;
+        EditingRow = row;
+        EditingColumn = columnName;
+        StateHasChanged();
+        try { await editingInputRef.FocusAsync(); } catch { }
+    }
+
+    private void StopEditing()
+    {
+        EditingRow = null;
+        EditingColumn = null;
+    }
+
+    private bool IsEditing(TranslationViewModel row, string columnName)
+    {
+        return EditingRow == row && EditingColumn == columnName;
+    }
+
+    private void HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" || e.Key == "Escape") StopEditing();
+    }
+
+    private void MoveFirst() { var l = FilteredTranslations.ToList(); if (l.Any()) SelectedRow = l.First(); }
+    private void MoveLast() { var l = FilteredTranslations.ToList(); if (l.Any()) SelectedRow = l.Last(); }
+
+    private void MoveNext()
+    {
+        var l = FilteredTranslations.ToList();
+        if (!l.Any()) return;
+        if (SelectedRow == null) SelectedRow = l.First();
+        else { int i = l.IndexOf(SelectedRow); if (i >= 0 && i < l.Count - 1) SelectedRow = l[i + 1]; }
+    }
+
+    private void MovePrevious()
+    {
+        var l = FilteredTranslations.ToList();
+        if (!l.Any()) return;
+        if (SelectedRow == null) SelectedRow = l.Last();
+        else { int i = l.IndexOf(SelectedRow); if (i > 0) SelectedRow = l[i - 1]; }
+    }
+
+    private async Task AddNewRow()
+    {
+        var newRow = new TranslationViewModel
+        {
+            RowId = groupedTranslations.Any() ? groupedTranslations.Max(x => x.RowId) + 1 : 1,
+            LangCode = "en",
+            WordKey = "",
+            EnglishValue = "",
+            ArabicValue = ""
+        };
+        groupedTranslations.Add(newRow);
+        SelectedRow = newRow;
+        await StartEditing(newRow, nameof(newRow.WordKey));
+    }
+
+    private void DeleteRow()
+    {
+        if (SelectedRow != null) { groupedTranslations.Remove(SelectedRow); SelectedRow = null; StopEditing(); }
+    }
+}
