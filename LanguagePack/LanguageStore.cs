@@ -7,8 +7,8 @@ namespace LanguagePack;
 public class LanguageStore
 {
     private readonly string _connStr;
-    private volatile Dictionary<string, Dictionary<string, string>> _words = new();
-    private volatile List<LanguageInfo> _languages = new();
+    private volatile Dictionary<string, Dictionary<string, string>> _words = [];
+    private volatile List<LanguageInfo> _languages = [];
 
     public LanguageStore(string dbPath)
     {

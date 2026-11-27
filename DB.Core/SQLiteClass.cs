@@ -6,7 +6,7 @@ namespace DB.Core
 {
     public class SQLiteClass
     {
-        public SqliteConnection Connection { get; }
+        public SqliteConnection? Connection { get; }
 
 
         public SQLiteClass(string connectionString)
@@ -16,30 +16,38 @@ namespace DB.Core
             {
                 Connection = new SqliteConnection($"Data Source={dbPath}");
             }
-            else
-            {
-                // Log Error here 
-            }
-
-            
         }
 
         public SQLiteClass()
         {
         }
 
+        public bool IsConnected => Is_Connected();
+
+        private bool Is_Connected()
+        {
+            if(Connection != null)
+            {
+                if (Connection.State != ConnectionState.Open) Connection.Open();
+                return Connection.State == ConnectionState.Open;
+            }
+            return false;
+        }
+
 
         // 1. Get full DataTable
         public DataTable GetDataTable(string query, params SqliteParameter[] parameters)
         {
+
+
             var dataTable = new DataTable();
+
+            if(!IsConnected) { return dataTable; }
 
             try
             {
-                if (Connection.State != ConnectionState.Open)
-                    Connection.Open();
-
-                using var command = Connection.CreateCommand();
+               
+                using var command = Connection!.CreateCommand();
                 command.CommandText = query;
 
                 if (parameters is { Length: > 0 })
@@ -50,7 +58,7 @@ namespace DB.Core
             }
             finally
             {
-                if (Connection.State == ConnectionState.Open)
+                if (Connection!.State == ConnectionState.Open)
                     Connection.Close();
             }
 

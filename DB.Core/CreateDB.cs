@@ -1,4 +1,5 @@
-﻿using AppModels.DB;
+﻿using AppConfig;
+using AppModels.DB;
 using Crypto;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -8,26 +9,21 @@ namespace DB.Core
 {
     public class CreateDB
     {
-        public SqlConnection Connection { get; private set; }
-        public string DatabaseName { get; private set; }
-        public SQLiteClass LiteService { get; set; }
+        public DBContextClass db { get; set; }
+        public ConfigKeys Keys { get; set; }
+        SQLiteClass LiteService { get; set; }
         private string EncryptKey = "Modern";
 
+        private string DatabaseName { get; set; }
+
         #region Constructor
-        public CreateDB(string? SQLConnectionString, string? _DatabaseName, string? _SQLiteString)
+        public CreateDB(DBContextClass _db, ConfigKeys _Keys)
         {
-            if (SQLConnectionString == null || _DatabaseName == null || _SQLiteString == null)
-            {
-                DatabaseName = null!;
-                Connection = null!;
-                LiteService = null!;
-            }
-            else
-            {
-                DatabaseName = _DatabaseName;
-                Connection = new SqlConnection(SQLConnectionString);
-                LiteService = new(_SQLiteString);
-            }
+            db = _db;
+            Keys = _Keys;
+
+            DatabaseName = Keys.Get<string>("DBName");
+            LiteService = new(Keys.Get<string>("DBCreateQuriesFile"));
         }
 
 
@@ -36,23 +32,20 @@ namespace DB.Core
         #region Core Method
         public bool CreateDatabase()
         {
-            if (!IsConnected()) { return false; }
+            if (!db.IsConnected) { return false; }
 
             try
             {
-                if (Connection.State != ConnectionState.Open)
-                    Connection.Open();
-
-                using var command = Connection.CreateCommand();
-                command.CommandText = @"
+              
+                db.Command.CommandText = @"
                                     IF DB_ID(@name) IS NULL
                                     BEGIN
                                         DECLARE @sql NVARCHAR(MAX) = N'CREATE DATABASE ' + QUOTENAME(@name);
                                         EXEC sp_executesql @sql;
                                     END";
 
-                command.Parameters.Add(new SqlParameter("@name", SqlDbType.NVarChar, 128) { Value = DatabaseName });
-                command.ExecuteNonQuery();
+                db.Command.Parameters.Add(new SqlParameter("@name", SqlDbType.NVarChar, 128) { Value = DatabaseName });
+                db.Command.ExecuteNonQuery();
 
                 return true;
             }
@@ -61,20 +54,7 @@ namespace DB.Core
                 return false;
             }
         }
-        public bool IsConnected()
-        {
-            try
-            {
-                if (Connection.State != ConnectionState.Open)
-                    Connection.Open();
-
-                return Connection.State == ConnectionState.Open;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
+        public bool IsConnected => db.IsConnected;
 
 
         public bool CreateDataTables()
@@ -85,7 +65,7 @@ namespace DB.Core
 
             if (_Queries.Count == 0) { return IsCreated; }
 
-            using var transaction = Connection.BeginTransaction();
+            using var transaction = db.Connection.BeginTransaction();
 
             try
             {
@@ -132,7 +112,7 @@ namespace DB.Core
                 sql.Append($"CREATE TABLE [{DatabaseName}].[dbo].[{query.TableName}] ");
                 sql.Append(query.ColumnsScript);
 
-                using SqlCommand command = new(sql.ToString(), Connection, transaction);
+                using SqlCommand command = new(sql.ToString(), db.Connection, transaction);
 
                 command.ExecuteNonQuery();
 
@@ -146,15 +126,17 @@ namespace DB.Core
 
         private bool IsTableExists(string tableName, SqlTransaction transaction = null!)
         {
+            if(DatabaseName == null) { return false; }
+
             try
             {
-                string sql = $"SELECT CASE WHEN EXISTS (SELECT 1 FROM [{DatabaseName}].sys.tables WHERE name = @TableName ) THEN 1 ELSE 0 END;";
+                string _SQL = $"SELECT CASE WHEN EXISTS (SELECT 1 FROM [{DatabaseName}].sys.tables WHERE name = @TableName ) THEN 1 ELSE 0 END;";
 
-                using SqlCommand command = new(sql, Connection, transaction);
+                db.Command.CommandText = _SQL;
+                db.Command.Parameters.Clear();
+                db.Command.Parameters.AddWithValue("@TableName", tableName);
 
-                command.Parameters.AddWithValue("@TableName", tableName);
-
-                return Convert.ToBoolean(command.ExecuteScalar());
+                return Convert.ToBoolean(db.Command.ExecuteScalar());
             }
             catch
             {
@@ -172,7 +154,7 @@ namespace DB.Core
                 var _Password = "123456";
                 var _PasswordHash = Encrypt.EncryptString(_Password, EncryptKey);
 
-                _Transaction = Connection.BeginTransaction();
+                _Transaction = db.Connection.BeginTransaction();
 
                 // 1. Create System Transaction
                 var _TransGuid = CreateSystemTransaction(
@@ -189,67 +171,69 @@ namespace DB.Core
 
                 // 2. Create Admin User
                 var _SQL = $@"
-            IF NOT EXISTS
-(
-    SELECT 1
-    FROM [{DatabaseName}].[dbo].[Users]
-    WHERE [UserName] = @UserName
-)
-BEGIN
-    INSERT INTO [Web2].[dbo].[Users]
-    (
-        [IdHash],
-        [UserName],
-        [PasswordHash],
-        [SecurityStamp],
-        [FullName],
-        [Email],
-        [EmailConfirmed],
-        [PhoneNumber],
-        [PhoneNumberConfirmed],
-        [IsActive],
-        [MustChangePasswordNextLogin],
-        [DefaultLanguageID],
-        [IsADAccount],
-        [AccessFailedCount],
-        [LockoutEnabled],
-        [TwoFactorEnabled],
-        [AddTransactionID]
-    )
-    VALUES
-    (
-        @IdHash,
-        @UserName,
-        @PasswordHash,
-        @SecurityStamp,
-        @FullName,
-        @Email,
-        0,
-        '',
-        0,
-        1,
-        1,
-        1,
-        0,
-        0,
-        0,
-        0,
-        @TransactionID
-    );
-END";
+                            IF NOT EXISTS
+                            (
+                                SELECT 1
+                                FROM [{DatabaseName}].[dbo].[Users]
+                                WHERE [UserName] = @UserName
+                            )
+                            BEGIN
+                                INSERT INTO [Web2].[dbo].[Users]
+                                (
+                                    [IdHash],
+                                    [UserName],
+                                    [PasswordHash],
+                                    [SecurityStamp],
+                                    [FullName],
+                                    [Email],
+                                    [EmailConfirmed],
+                                    [PhoneNumber],
+                                    [PhoneNumberConfirmed],
+                                    [IsActive],
+                                    [MustChangePasswordNextLogin],
+                                    [DefaultLanguageID],
+                                    [IsADAccount],
+                                    [AccessFailedCount],
+                                    [LockoutEnabled],
+                                    [TwoFactorEnabled],
+                                    [AddTransactionID]
+                                )
+                                VALUES
+                                (
+                                    @IdHash,
+                                    @UserName,
+                                    @PasswordHash,
+                                    @SecurityStamp,
+                                    @FullName,
+                                    @Email,
+                                    0,
+                                    '',
+                                    0,
+                                    1,
+                                    1,
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    @TransactionID
+                                );
+                            END";
 
-                using (SqlCommand _Command = new(_SQL, Connection, _Transaction))
-                {
-                    _Command.Parameters.AddWithValue("@IdHash", Guid.NewGuid().ToString());
-                    _Command.Parameters.AddWithValue("@UserName", _Admin);
-                    _Command.Parameters.AddWithValue("@PasswordHash", _PasswordHash);
-                    _Command.Parameters.AddWithValue("@SecurityStamp", Guid.NewGuid().ToString());
-                    _Command.Parameters.AddWithValue("@FullName", "System Administrator");
-                    _Command.Parameters.AddWithValue("@Email", "admin@localhost.com");
-                    _Command.Parameters.AddWithValue("@TransactionID", _TransGuid.Value);
+                db.Command.CommandText = _SQL;
+                db.Command.Parameters.Clear();
 
-                    _Command.ExecuteNonQuery();
-                }
+
+                    db.Command.Parameters.AddWithValue("@IdHash", Guid.NewGuid().ToString());
+                    db.Command.Parameters.AddWithValue("@UserName", _Admin);
+                    db.Command.Parameters.AddWithValue("@PasswordHash", _PasswordHash);
+                    db.Command.Parameters.AddWithValue("@SecurityStamp", Guid.NewGuid().ToString());
+                    db.Command.Parameters.AddWithValue("@FullName", "System Administrator");
+                    db.Command.Parameters.AddWithValue("@Email", "admin@localhost.com");
+                    db.Command.Parameters.AddWithValue("@TransactionID", _TransGuid.Value);
+
+                    db.Command.ExecuteNonQuery();
+                
 
                 // 3. Commit
                 _Transaction.Commit();
@@ -296,14 +280,16 @@ END";
                                 @TransactionByUserID,
                                 @TransactionType
                             );";
-                using SqlCommand _Command = new(_SQL, Connection, transaction);
 
-                _Command.Parameters.AddWithValue("@TransactionID", _TransactionID);
-                _Command.Parameters.AddWithValue("@TransactionName", TransactionName);
-                _Command.Parameters.AddWithValue("@TransactionByUserID", TransactionByUserID);
-                _Command.Parameters.AddWithValue("@TransactionType", TransactionType);
+                db.Command.CommandText = _SQL;
+                db.Command.Parameters.Clear();
 
-                _Command.ExecuteNonQuery();
+                db.Command.Parameters.AddWithValue("@TransactionID", _TransactionID);
+                db.Command.Parameters.AddWithValue("@TransactionName", TransactionName);
+                db.Command.Parameters.AddWithValue("@TransactionByUserID", TransactionByUserID);
+                db.Command.Parameters.AddWithValue("@TransactionType", TransactionType);
+
+                db.Command.ExecuteNonQuery();
 
                 return _TransactionID;
             }

@@ -1,0 +1,133 @@
+﻿.app-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 0 16px;
+    height: 64px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-self: start;
+}
+
+.app-title {
+    position: static; /* Overrides any old absolute positioning */
+    transform: none;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f172a;
+    justify-self: center;
+    white-space: nowrap;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-self: end;
+}
+
+/* Override any old global absolute positioning on .lang-select */
+.lang-select {
+    position: static !important;
+    margin: 0 !important;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #1e293b;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.auth-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    /* Prevent global absolute/float rules from hijacking the layout */
+    position: static !important;
+    float: none !important;
+    margin: 0 !important;
+}
+
+.login-btn {
+    background-color: #2563eb;
+    color: #ffffff;
+    border: 1px solid #2563eb;
+}
+
+    .login-btn:hover {
+        background-color: #1d4ed8;
+    }
+
+.logout-btn {
+    background-color: transparent;
+    color: #dc2626;
+    border: 1px solid #ef4444;
+}
+
+    .logout-btn:hover {
+        background-color: #fef2f2;
+        border-color: #dc2626;
+        color: #b91c1c;
+    }
+
+.header-logo,
+.header-client {
+    height: 44px;
+    width: auto;
+    object-fit: contain;
+}
+
+
+.menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+    .menu-toggle:hover {
+        background-color: #e2e8f0;
+        border-color: #cbd5e1;
+        color: #2563eb;
+    }
+
+    .menu-toggle:active {
+        transform: scale(0.94);
+    }
+
+    .menu-toggle:focus-visible {
+        outline: 2px solid #2563eb;
+        outline-offset: 2px;
+    }
+
+    .menu-toggle svg {
+        width: 21px;
+        height: 21px;
+        transition: transform 0.2s ease;
+    }
