@@ -1,0 +1,85 @@
+﻿@using System.Globalization
+@using AppAuth
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Nav
+@inject Translator L
+@inject IUserAuthService UserAuth
+
+<header class="app-header">
+    <div class="header-left">
+        <AuthorizeView>
+            <Authorized>
+                <button type="button"
+                        class="menu-toggle"
+                        @onclick="OnToggleSidebar"
+                        title="@L["ToggleMenu"]"
+                        aria-label="@L["ToggleMenu"]">
+
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2"
+                         stroke-linecap="round">
+                        <path d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </Authorized>
+        </AuthorizeView>
+
+        <img src="Images/System/MyLogo.gif" alt="Company Logo" class="header-logo" />
+    </div>
+
+    <div class="app-title">@Title</div>
+
+    <div class="header-right">
+        <select class="lang-select" value="@CurrentLang" @onchange="ChangeLanguage">
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+        </select>
+
+        <AuthorizeView>
+            <Authorized>
+                <a class="auth-btn logout-btn" @onclick="GoLogoutPage">@L["Logout"]</a>
+            </Authorized>
+            <NotAuthorized>
+                <a class="auth-btn login-btn" @onclick="GoLoginPage">@L["Login"]</a>
+            </NotAuthorized>
+        </AuthorizeView>
+
+        <img src="Images/System/Client.gif" alt="Client" class="header-client" />
+    </div>
+</header>
+
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Asset Inspector 2";
+
+    [Parameter]
+    public EventCallback OnToggleSidebar { get; set; }
+
+    private string CurrentLang => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+
+    private void ChangeLanguage(ChangeEventArgs e)
+    {
+        var culture = e.Value?.ToString() ?? "en";
+        var relativePath = Nav.ToBaseRelativePath(Nav.Uri);
+        var returnUrl = "/" + relativePath.TrimStart('/');
+
+        Nav.NavigateTo(
+            $"/culture/set?culture={Uri.EscapeDataString(culture)}&redirectUri={Uri.EscapeDataString(returnUrl)}",
+            forceLoad: true);
+    }
+
+    private void GoLoginPage()
+    {
+        Nav.NavigateTo("/login");
+    }
+
+    private async Task GoLogoutPage()
+    {
+        await UserAuth.SignOutAsync();
+        Nav.NavigateTo("/");
+    }
+
+}

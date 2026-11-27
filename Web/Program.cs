@@ -5,25 +5,37 @@ using Microsoft.AspNetCore.Localization;
 using Web.Components;
 using Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using AppConfig;
+using DB.Core;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var store = new LanguageStore(Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "System", "language.db"));
+var Keys = new KeysStore(Path.Combine(builder.Environment.ContentRootPath, "wwwroot", "System", "Config.db"));
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthorization();
 builder.Services.AddHttpContextAccessor();
 
-var store = new LanguageStore(Path.Combine(builder.Environment.ContentRootPath, "System", "language.db"));
 builder.Services.AddSingleton(store);
+builder.Services.AddSingleton(Keys);
 
-builder.Services.AddSingleton<IConfigurationService, ConfigurationService>();
-builder.Services.AddSingleton<GlobalService>();
+builder.Services.AddScoped<ConfigKeys>();
+builder.Services.AddScoped<GlobalService>();
 
 builder.Services.AddScoped<Translator>();
-builder.Services.AddScoped<IDatabaseService, DatabaseService>();
-
 builder.Services.AddScoped<UserAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp =>sp.GetRequiredService<UserAuthStateProvider>());
 builder.Services.AddScoped<IUserAuthService, UserAuthService>();
+builder.Services.AddScoped<DBContextClass>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+
+    string connectionString = configuration.GetConnectionString("SQLConnection")
+        ?? throw new InvalidOperationException("SQLConnection is missing.");
+
+    return new DBContextClass(connectionString);
+});
 
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();

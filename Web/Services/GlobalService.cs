@@ -1,28 +1,33 @@
-﻿namespace Web.Services
+﻿using AppConfig;
+
+namespace Web.Services
 {
     public class GlobalService
     {
-        public IConfigurationService Config;
         public Format Format { get; set; }
         public Reports Reports { get; set; }
+        public AppPaths Paths { get; set; }
+        private ConfigKeys Keys { get; set; }
 
-        public GlobalService(IConfigurationService config)
+
+        public GlobalService(ConfigKeys _Keys)
         {
-            Config = config;
+            Keys = _Keys;
             Format = GetFormats();
             Reports = GetReports();
+            Paths = GetPaths();
         }
 
         private Format GetFormats()
         {
             return new()
             {
-                Currency = Config.GetValue<string>("Currency"),
-                DateFormat = Config.GetValue<string>("DefaultDate"),
-                Number = Config.GetValue<string>("Number"),
-                Digit2 = Config.GetValue<string>("Digit2"),
-                Digit4 = Config.GetValue<string>("Digit4"),
-                Digit6 = Config.GetValue<string>("Digit6")
+                Currency = Keys.Get<string>("Currency"),
+                DateFormat = Keys.Get<string>("DefaultDate"),
+                Number = Keys.Get<string>("Number"),
+                Digit2 = Keys.Get<string>("Digit2"),
+                Digit4 = Keys.Get<string>("Digit4"),
+                Digit6 = Keys.Get<string>("Digit6")
 
             };
         }
@@ -31,9 +36,20 @@
         {
             return new()
             {
-                AssetReport = Config.GetValue<string>("AssetReport"),
-                FormC = Config.GetValue<string>("FormC"),
-                Form11 = Config.GetValue<string>("Form11"),
+                AssetReport = Keys.Get<string>("AssetReport"),
+                FormC =       Keys.Get<string>("FormC"),
+                Form11 =      Keys.Get<string>("Form11"),
+            };
+        }
+
+        private AppPaths GetPaths()
+        {
+            return new()
+            {
+                SystemFolder = Directory.GetCurrentDirectory(),
+                AssetImagePath = Keys.Get<string>("AssetImagePath"),
+                ClassImagePath = Keys.Get<string>("ClassImagePath"),
+                AppImagePath = Keys.Get<string>("AppImagePath")
             };
         }
     }
@@ -54,5 +70,14 @@
         public string? AssetReport { get; set; }
         public string? FormC { get; set; }
         public string? Form11 { get; set; }
+    }
+
+    public class AppPaths
+    {
+        public string SystemFolder { get; set; } = string.Empty;
+        public string AssetImagePath { get; set; } = string.Empty;
+        public string ClassImagePath { get; set; } = string.Empty;
+        public string AppImagePath { get; set; } = string.Empty;
+            
     }
 }
