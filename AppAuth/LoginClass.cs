@@ -3,6 +3,7 @@ using AppModels.Login;
 using Crypto;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using DB.Core;
 
 namespace AppAuth
 {
@@ -18,48 +19,22 @@ namespace AppAuth
 
     public class LoginClass
     {
-        private SqlConnection? Connection;
-        private ConfigModel? Config;
-        public LoginClass(SqlConnection _Connection, ConfigModel _Config)
+        private DBContextClass db;
+        private ConfigKeys Keys;
+        public LoginClass(DBContextClass _DbContext, ConfigKeys _Keys)
         {
-            Connection = _Connection;
-            Config = _Config;
+            db = _DbContext;
+            Keys = _Keys;
         }
 
-        public LoginClass(ConfigModel _Config)
-        {
-            Config = _Config;
-        }
-
-
-        public LoginClass()
-        {
-        }
-
-        public bool IsConnected => Is_Connected();
-        private bool Is_Connected()
-        {
-            try
-            {
-                if(Connection != null)
-                {
-                    if (Connection!.State != ConnectionState.Open) { Connection.Open(); }
-                    return Connection.State == ConnectionState.Open;
-                }
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        public bool IsConnected => db.IsConnected;
 
         public UserProfile GetUserProfile(LoginModel loginModel)
         {
-            
+
 
             UserProfile? _UserProfile = new() { IsLogin = false };
-            if (!Is_Connected())
+            if (!IsConnected)
             {
                 _UserProfile.LoginMessage = "dbNotConnected";
                 return _UserProfile;
@@ -69,7 +44,7 @@ namespace AppAuth
 
             try
             {
-                const string _Query = @"
+                const string _SQL = @"
                     SELECT
                         [UserName],
                         [PasswordHash],
@@ -85,37 +60,37 @@ namespace AppAuth
                     FROM [Web2].[dbo].[Users]
                     WHERE [UserName] = @UserName;";
 
-                using (SqlCommand _Command = new(_Query, Connection))
+                db.Command.CommandText = _SQL;
+                db.Command.Parameters.Clear();
+                db.Command.Parameters.Add("@UserName", SqlDbType.NVarChar, 256).Value = loginModel.UserID;
+
+
+                using SqlDataReader _Reader = db.Command.ExecuteReader();
+                if (_Reader.Read())
                 {
-                    _Command.Parameters.Add("@UserName", SqlDbType.NVarChar, 256).Value = loginModel.UserID;
+                    storedPasswordHash = _Reader["PasswordHash"]?.ToString() ?? "";
 
-                    
-                    using SqlDataReader _Reader = _Command.ExecuteReader();
-                    if (_Reader.Read())
-                    {
-                        storedPasswordHash = _Reader["PasswordHash"]?.ToString() ?? "";
+                    _UserProfile.UserID = _Reader["UserName"]?.ToString() ?? "";
+                    _UserProfile.DisplayName = _Reader["FullName"]?.ToString() ?? "";
+                    _UserProfile.Email = _Reader["Email"]?.ToString() ?? "";
+                    _UserProfile.PhoneNumber = _Reader["PhoneNumber"]?.ToString() ?? "";
+                    _UserProfile.IsActive = Convert.ToBoolean(_Reader["IsActive"]);
+                    _UserProfile.Language = _Reader["DefaultLanguageID"]?.ToString() ?? "";
+                    _UserProfile.MFAuth = Convert.ToBoolean(_Reader["TwoFactorEnabled"]);
+                    _UserProfile.IsLock = Convert.ToBoolean(_Reader["LockoutEnabled"]);
+                    _UserProfile.LockOutTime = _Reader["LockoutEndDateUtc"] == DBNull.Value
+                        ? null
+                        : Convert.ToDateTime(_Reader["LockoutEndDateUtc"]);
+                    _UserProfile.LogonAttampt = _Reader["AccessFailedCount"] == DBNull.Value
+                        ? 0
+                        : Convert.ToInt32(_Reader["AccessFailedCount"]);
 
-                        _UserProfile.UserID = _Reader["UserName"]?.ToString() ?? "";
-                        _UserProfile.DisplayName = _Reader["FullName"]?.ToString() ?? "";
-                        _UserProfile.Email = _Reader["Email"]?.ToString() ?? "";
-                        _UserProfile.PhoneNumber = _Reader["PhoneNumber"]?.ToString() ?? "";
-                        _UserProfile.IsActive = Convert.ToBoolean(_Reader["IsActive"]);
-                        _UserProfile.Language = _Reader["DefaultLanguageID"]?.ToString() ?? "";
-                        _UserProfile.MFAuth = Convert.ToBoolean(_Reader["TwoFactorEnabled"]);
-                        _UserProfile.IsLock = Convert.ToBoolean(_Reader["LockoutEnabled"]);
-                        _UserProfile.LockOutTime = _Reader["LockoutEndDateUtc"] == DBNull.Value
-                            ? null
-                            : Convert.ToDateTime(_Reader["LockoutEndDateUtc"]);
-                        _UserProfile.LogonAttampt = _Reader["AccessFailedCount"] == DBNull.Value
-                            ? 0
-                            : Convert.ToInt32(_Reader["AccessFailedCount"]);
+                    _UserProfile.LoginTime = DateTime.Now;
+                    IsUserFound = true;
+                }
 
-                        _UserProfile.LoginTime = DateTime.Now;
-                        IsUserFound = true;
-                    }
-                } // _Reader is closed here so subsequent SQL commands can run safely
 
-                if(!IsUserFound)
+                if (!IsUserFound)
                 {
                     _UserProfile.LoginMessage = "UserNoFound";
                     return _UserProfile;
@@ -186,7 +161,7 @@ namespace AppAuth
 
         public bool UpdateLoginAttempt(string userName)
         {
-            if (!Is_Connected()) return false;
+            if (!IsConnected) return false;
 
             try
             {
@@ -195,10 +170,11 @@ namespace AppAuth
                     SET [AccessFailedCount] = ISNULL([AccessFailedCount], 0) + 1
                     WHERE [UserName] = @UserName;";
 
-                using SqlCommand _Command = new(_SQL, Connection);
-                _Command.Parameters.Add("@UserName", SqlDbType.NVarChar, 256).Value = userName;
+                db.Command.CommandText = _SQL;
+                db.Command.Parameters.Clear();
+                db.Command.Parameters.Add("@UserName", SqlDbType.NVarChar, 256).Value = userName;
 
-                return _Command.ExecuteNonQuery() > 0;
+                return db.Command.ExecuteNonQuery() > 0;
             }
             catch
             {
@@ -208,9 +184,9 @@ namespace AppAuth
 
         public void UserLocked(string userName)
         {
-            if (!Is_Connected()) return;
+            if (!db.IsConnected) return;
 
-            int lockoutMinutes = Config?.GetValue<int>("LockoutMinutes") ?? 15; // Fallback to 15 mins if Config is null
+            int lockoutMinutes = Keys.Get<int>("LockoutMinutes"); // Fallback to 15 mins if Config is null
 
             const string _SQL = @"
                 UPDATE [Web2].[dbo].[Users]
@@ -218,16 +194,16 @@ namespace AppAuth
                     [LockoutEndDateUtc] = DATEADD(MINUTE, @Minutes, GETUTCDATE())
                 WHERE [UserName] = @UserName;";
 
-            using SqlCommand _Command = new(_SQL, Connection);
-            _Command.Parameters.Add("@UserName", SqlDbType.NVarChar, 256).Value = userName;
-            _Command.Parameters.Add("@Minutes", SqlDbType.Int).Value = lockoutMinutes;
-
-            _Command.ExecuteNonQuery();
+            db.Command.CommandText = _SQL;
+            db.Command.Parameters.Clear();
+            db.Command.Parameters.Add("@UserName", SqlDbType.NVarChar, 256).Value = userName;
+            db.Command.Parameters.Add("@Minutes", SqlDbType.Int).Value = lockoutMinutes;
+            db.Command.ExecuteNonQuery();
         }
 
         public void ResetLoginAttempts(string userName)
         {
-            if (!Is_Connected()) return;
+            if (!IsConnected) return;
 
             const string _SQL = @"
                 UPDATE [Web2].[dbo].[Users]
@@ -236,12 +212,12 @@ namespace AppAuth
                     [LockoutEndDateUtc] = NULL
                 WHERE [UserName] = @UserName;";
 
-            using SqlCommand _Command = new(_SQL, Connection);
-            _Command.Parameters.Add("@UserName", SqlDbType.NVarChar, 256).Value = userName;
-
-            _Command.ExecuteNonQuery();
+            db.Command.CommandText = _SQL;
+            db.Command.Parameters.Clear();
+            db.Command.Parameters.Add("@UserName", SqlDbType.NVarChar, 256).Value = userName;
+            db.Command.ExecuteNonQuery();
         }
 
-        
+
     }
 }

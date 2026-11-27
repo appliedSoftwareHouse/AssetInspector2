@@ -1,17 +1,17 @@
 ﻿@page "/login"
 @using AppAuth
 @using LanguagePack
+@using DB.Core
 
 @using Web.Services
 @layout LoginLayout
 @attribute [AllowAnonymous]
-@inject IDatabaseService DbService
-@inject IConfigurationService Config
-@inject GlobalService Global
 @inject NavigationManager NavManager
 @inject Translator L 
 @inject IUserAuthService UserAuth
 @inject ConfigKeys Keys
+@inject DBContextClass db
+@inject GlobalService Global
 
 
 <div class="login-container">

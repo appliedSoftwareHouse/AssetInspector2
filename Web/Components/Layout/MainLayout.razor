@@ -4,7 +4,10 @@
 
 <div class="app-shell">
 
-    <header class="app-header">
+
+    <AppHeader/>
+
+    @* <header class="app-header">
         <button class="menu-toggle" @onclick="ToggleSidebar" title="Toggle menu">
             &#9776;
         </button>
@@ -19,7 +22,7 @@
         </select>
 
         <img src="Images/System/Client.gif" alt="Client" class="header-client" />
-    </header>
+    </header> *@
 
     <div class="app-body">
         <aside class="app-sidebar @(sidebarOpen ? "" : "collapsed")">

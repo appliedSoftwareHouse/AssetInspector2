@@ -1,5 +1,7 @@
 ﻿using AppModels.Login;
 using Crypto;
+using DB.Core;
+using Web.Services;
 
 
 namespace Web.Components.Pages.Login
@@ -12,17 +14,19 @@ namespace Web.Components.Pages.Login
         private string ImagePath { get; set; }
         private string NumberFormat { get; set; }
 
-
-
+        private CreateDB CreateDb { get; set; }
 
         public LoginModel UserLogin { get; set; } = new();
 
         protected override void OnInitialized()
         {
-            ImagePath = Config.GetValue<string>("AssetImagePath") ?? "";
+            //Global = new(Keys);
+            ImagePath = Keys.Get<string>("AssetImagePath") ?? "";
             NumberFormat = Global.Format.Number!;
 
             ImagePath = Keys.Get<string>("AppImages");
+
+            CreateDb = new(db, Keys);           // Create Database Service
         }
 
         public async Task OnLogin()
@@ -47,7 +51,7 @@ namespace Web.Components.Pages.Login
 
             if (Error == string.Empty)
             {
-                var LoginService = new AppAuth.LoginClass(DbService.Connection, Config.MyModel);
+                var LoginService = new AppAuth.LoginClass(db,Keys);
 
                 if (LoginService.IsConnected)
                 {
@@ -80,12 +84,12 @@ namespace Web.Components.Pages.Login
             // Createing a new Database instance if not exist, create all data table and system and Admin User default Account
 
             bool _result = false;
-
-            if (DbService.IsDBExist)
+            
+            if (CreateDb.IsConnected)
             {
-                _result = DbService.CreateDataTables;
-                if (_result) _result = DbService.UpdatePatches;
-                if (_result) _result = DbService.CreateAdminAccount;
+                _result = CreateDb.CreateDataTables();
+                if (_result) _result = CreateDb.UpdatePatches();
+                if (_result) _result = CreateDb.CreateAdminUser();
             }
             return _result;
         }
