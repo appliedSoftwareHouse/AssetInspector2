@@ -77,12 +77,14 @@
 
 .logout-btn {
     background-color: transparent;
-    color: #334155;
-    border: 1px solid #cbd5e1;
+    color: #dc2626;
+    border: 1px solid #ef4444;
 }
 
     .logout-btn:hover {
-        background-color: #f1f5f9;
+        background-color: #fef2f2;
+        border-color: #dc2626;
+        color: #b91c1c;
     }
 
 .header-logo,
@@ -91,3 +93,41 @@
     width: auto;
     object-fit: contain;
 }
+
+
+.menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #f8fafc;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+    .menu-toggle:hover {
+        background-color: #e2e8f0;
+        border-color: #cbd5e1;
+        color: #2563eb;
+    }
+
+    .menu-toggle:active {
+        transform: scale(0.94);
+    }
+
+    .menu-toggle:focus-visible {
+        outline: 2px solid #2563eb;
+        outline-offset: 2px;
+    }
+
+    .menu-toggle svg {
+        width: 21px;
+        height: 21px;
+        transition: transform 0.2s ease;
+    }

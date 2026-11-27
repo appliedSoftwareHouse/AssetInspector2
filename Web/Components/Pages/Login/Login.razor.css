@@ -155,3 +155,20 @@
 }
 
 
+.form-checkbox {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+    .form-checkbox .checkbox-input {
+        margin: 0;
+        flex: 0 0 16px;
+    }
+
+    .form-checkbox .checkbox-label {
+        margin: 0;
+        display: inline-block;
+        white-space: nowrap;
+    }

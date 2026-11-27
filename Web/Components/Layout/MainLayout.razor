@@ -3,27 +3,7 @@
 @inject NavigationManager Nav
 
 <div class="app-shell">
-
-
-    <AppHeader/>
-
-    @* <header class="app-header">
-        <button class="menu-toggle" @onclick="ToggleSidebar" title="Toggle menu">
-            &#9776;
-        </button>
-
-        <img src="Images/System/MyLogo.gif" alt="Company Logo" class="header-logo" />
-
-        <div class="app-title">Asset Inspector 2</div>
-        
-        <select class="lang-select" value="@CurrentLang" @onchange="ChangeLanguage">
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
-        </select>
-
-        <img src="Images/System/Client.gif" alt="Client" class="header-client" />
-    </header> *@
-
+    <AppHeader OnToggleSidebar="ToggleSidebar" />
     <div class="app-body">
         <aside class="app-sidebar @(sidebarOpen ? "" : "collapsed")">
             <NavMenu />
